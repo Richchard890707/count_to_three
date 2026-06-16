@@ -1,15 +1,16 @@
 // NOTE: AlarmKit was introduced in iOS 26 (WWDC 2025).
 // This file is compiled only on iOS 26+ targets; on older devices the
 // runtime `#available` guards in AlarmEngine route to NotificationFallback.
-//
-// IMPORTANT: If any AlarmKit symbol fails to resolve, verify the API against
-// Xcode 26 documentation or the WWDC25 "Introducing AlarmKit" session.
-// Likely mismatch points are annotated with // ⚠️ VERIFY.
 
 import Foundation
+import SwiftUI
 
 #if canImport(AlarmKit)
 import AlarmKit
+
+/// Empty metadata type — AlarmKit requires a concrete AlarmMetadata conformance
+/// even when no Live Activity metadata is needed.
+struct AlarmEmptyMetadata: AlarmMetadata {}
 
 @available(iOS 26.0, *)
 final class AlarmKitScheduler {
@@ -20,8 +21,8 @@ final class AlarmKitScheduler {
 
     func requestAuthorization() async -> Bool {
         do {
-            let status = try await AlarmManager.shared.requestAuthorization() // ⚠️ VERIFY return type
-            return status == .authorized                                        // ⚠️ VERIFY enum case
+            let status = try await AlarmManager.shared.requestAuthorization()
+            return status == .authorized
         } catch {
             return false
         }
@@ -30,15 +31,26 @@ final class AlarmKitScheduler {
     // MARK: - Schedule / Cancel
 
     func schedule(_ alarm: AlarmData) async throws {
-        let kitAlarm = Alarm(
-            id: alarmUUID(alarm.id),
-            schedule: AlarmSchedule(date: alarm.triggerDate) // ⚠️ VERIFY AlarmSchedule init
+        let alert = AlarmPresentation.Alert(
+            title: alarm.title,
+            stopButton: AlarmButton(text: "停止") // ⚠️ VERIFY AlarmButton init params
         )
-        try await AlarmManager.shared.schedule(kitAlarm) // ⚠️ VERIFY method signature
+        let attributes = AlarmAttributes<AlarmEmptyMetadata>(
+            presentation: AlarmPresentation(alert: alert),
+            tintColor: Color(red: 0.898, green: 0.224, blue: 0.208)
+        )
+        let configuration = AlarmConfiguration(
+            schedule: .fixed(alarm.triggerDate),
+            attributes: attributes
+        )
+        try await AlarmManager.shared.schedule(
+            id: alarmUUID(alarm.id),
+            configuration: configuration
+        )
     }
 
     func cancel(alarmId: Int) async throws {
-        try await AlarmManager.shared.cancel(alarmUUID(alarmId)) // ⚠️ VERIFY method signature
+        try await AlarmManager.shared.cancel(id: alarmUUID(alarmId))
     }
 
     // MARK: - Pending alarm detection (called on app foreground)
@@ -48,14 +60,7 @@ final class AlarmKitScheduler {
         let stored = AlarmStore.shared.getAll()
         guard !stored.isEmpty else { return [] }
 
-        let kitAlarms: [Alarm]
-        do {
-            kitAlarms = try await AlarmManager.shared.alarms // ⚠️ VERIFY: may be a property vs method
-        } catch {
-            // Cannot determine status → assume all still pending
-            return Set(stored.map { $0.id })
-        }
-
+        let kitAlarms = AlarmManager.shared.alarms  // synchronous property
         let activeUUIDs = Set(kitAlarms.map { $0.id })
         return Set(stored.filter { activeUUIDs.contains(alarmUUID($0.id)) }.map { $0.id })
     }
@@ -65,7 +70,6 @@ final class AlarmKitScheduler {
     /// Converts our Int alarmId to a deterministic UUID suitable for AlarmKit.
     private func alarmUUID(_ id: Int) -> UUID {
         // Format: 00000000-0000-4000-8000-{id as 12 lower-hex digits}
-        // alarmId is always < 1_000_000, so the 12-char field is more than enough.
         UUID(uuidString: String(format: "00000000-0000-4000-8000-%012x", id))!
     }
 }
