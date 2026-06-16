@@ -63,6 +63,35 @@ final class AlarmPlugin: NSObject {
                 }
             }
 
+        case "scheduleNotification":
+            guard
+                let args        = call.arguments as? [String: Any],
+                let notifId     = args["id"]          as? Int,
+                let reminderId  = args["reminderId"]  as? String,
+                let title       = args["title"]       as? String,
+                let triggerAtMs = args["triggerAtMs"] as? Int
+            else {
+                result(FlutterError(code: "INVALID_ARGS", message: "Missing required arguments", details: nil))
+                return
+            }
+            NotificationFallback.shared.requestAuthorization { _ in }
+            NotificationFallback.shared.scheduleSimple(
+                id: notifId,
+                reminderId: reminderId,
+                title: title,
+                body: args["body"] as? String,
+                triggerAtMs: triggerAtMs
+            )
+            result(nil)
+
+        case "cancelNotification":
+            guard let notifId = call.arguments as? Int else {
+                result(FlutterError(code: "INVALID_ARGS", message: "Expected Int id", details: nil))
+                return
+            }
+            NotificationFallback.shared.cancelSimple(id: notifId)
+            result(nil)
+
         case "getPendingAlarms":
             let alarms = AlarmStore.shared.getAll().map { a -> [String: Any] in
                 ["alarmId": a.id, "reminderId": a.reminderId,

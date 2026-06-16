@@ -72,6 +72,37 @@ final class NotificationFallback {
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [id])
     }
 
+    // MARK: - Simple (NOTIFICATION-level, no actions)
+
+    /// Schedules a plain banner notification without stop/snooze actions.
+    /// Used for NOTIFICATION-grade reminders on iOS where FLN is not the delegate.
+    func scheduleSimple(id: Int, reminderId: String, title: String, body: String?, triggerAtMs: Int) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body  = body ?? ""
+        content.sound = .default
+        content.userInfo = ["notifId": id, "reminderId": reminderId]
+
+        let triggerDate = Date(timeIntervalSince1970: Double(triggerAtMs) / 1000)
+        let components = Calendar.current.dateComponents(
+            [.year, .month, .day, .hour, .minute, .second],
+            from: triggerDate
+        )
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        let request = UNNotificationRequest(
+            identifier: "notif_\(id)",
+            content: content,
+            trigger: trigger
+        )
+        UNUserNotificationCenter.current().add(request)
+    }
+
+    func cancelSimple(id: Int) {
+        let identifier = "notif_\(id)"
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [identifier])
+    }
+
     // MARK: - Action handling (called from AppDelegate UNUserNotificationCenterDelegate)
 
     func handleNotificationResponse(_ response: UNNotificationResponse) {

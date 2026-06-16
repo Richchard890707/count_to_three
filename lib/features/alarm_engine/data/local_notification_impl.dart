@@ -2,14 +2,19 @@ import 'dart:io';
 
 import 'package:count_to_three/features/alarm_engine/domain/models/notification_request.dart';
 import 'package:count_to_three/features/alarm_engine/domain/notification_scheduler.dart';
+import 'package:count_to_three/core/constants/app_constants.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 class LocalNotificationImpl implements NotificationScheduler {
-  LocalNotificationImpl() : _fln = FlutterLocalNotificationsPlugin();
+  LocalNotificationImpl()
+      : _fln = FlutterLocalNotificationsPlugin(),
+        _iosChannel = const MethodChannel(AppConstants.alarmMethodChannel);
 
   final FlutterLocalNotificationsPlugin _fln;
+  final MethodChannel _iosChannel;
 
   static const _channelId = 'reminders';
   static const _channelName = '提醒通知';
@@ -58,9 +63,13 @@ class LocalNotificationImpl implements NotificationScheduler {
   @override
   Future<void> scheduleNotification(NotificationRequest request) async {
     if (Platform.isIOS) {
-      // TODO(M8): iOS NOTIFICATION-grade requires a unified
-      // UNUserNotificationCenter delegate coordinator to avoid conflict with
-      // AlarmKit fallback (M3). Deferred until Xcode testing is available.
+      await _iosChannel.invokeMethod('scheduleNotification', {
+        'id': request.id,
+        'reminderId': request.reminderId,
+        'title': request.title,
+        'body': request.body,
+        'triggerAtMs': request.triggerAt.millisecondsSinceEpoch,
+      });
       return;
     }
     await _fln.zonedSchedule(
@@ -76,5 +85,11 @@ class LocalNotificationImpl implements NotificationScheduler {
   }
 
   @override
-  Future<void> cancelNotification(int id) => _fln.cancel(id);
+  Future<void> cancelNotification(int id) async {
+    if (Platform.isIOS) {
+      await _iosChannel.invokeMethod('cancelNotification', id);
+      return;
+    }
+    await _fln.cancel(id);
+  }
 }
