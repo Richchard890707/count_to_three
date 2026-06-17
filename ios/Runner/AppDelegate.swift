@@ -3,7 +3,7 @@ import UIKit
 import UserNotifications
 
 @main
-@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate, UNUserNotificationCenterDelegate {
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
     override func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -12,15 +12,15 @@ import UserNotifications
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 
-    func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+    func didInitializeImplicitFlutterEngine(_ engineBridge: any FlutterImplicitEngineBridge) {
         GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
-        AlarmPlugin.shared.setup(messenger: engineBridge.binaryMessenger)
+        AlarmPlugin.shared.setup(messenger: engineBridge.applicationRegistrar.messenger())
     }
 
     // MARK: - UNUserNotificationCenterDelegate (iOS ≤25 fallback)
 
     // Handle stop / snooze action taps
-    func userNotificationCenter(
+    override func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
@@ -30,7 +30,7 @@ import UserNotifications
     }
 
     // Show notification banner even when app is in the foreground
-    func userNotificationCenter(
+    override func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void

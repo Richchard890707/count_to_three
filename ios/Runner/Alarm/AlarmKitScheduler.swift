@@ -8,11 +8,11 @@ import SwiftUI
 #if canImport(AlarmKit)
 import AlarmKit
 
-/// Empty metadata type — AlarmKit requires a concrete AlarmMetadata conformance
-/// even when no Live Activity metadata is needed.
+/// Empty metadata — AlarmKit requires a concrete AlarmMetadata conformance.
+/// The empty struct satisfies Codable/Hashable/Sendable via synthesis.
 struct AlarmEmptyMetadata: AlarmMetadata {}
 
-@available(iOS 26.0, *)
+@available(iOS 26.1, *)
 final class AlarmKitScheduler {
     static let shared = AlarmKitScheduler()
     private init() {}
@@ -31,15 +31,18 @@ final class AlarmKitScheduler {
     // MARK: - Schedule / Cancel
 
     func schedule(_ alarm: AlarmData) async throws {
+        // AlarmPresentation.Alert.title requires LocalizedStringResource.
+        // Using stringLiteral init works at runtime for dynamic strings.
         let alert = AlarmPresentation.Alert(
-            title: alarm.title,
-            stopButton: AlarmButton(text: "停止") // ⚠️ VERIFY AlarmButton init params
+            title: LocalizedStringResource(stringLiteral: alarm.title)
+            // No stopButton arg → system uses default stop button UI
         )
         let attributes = AlarmAttributes<AlarmEmptyMetadata>(
             presentation: AlarmPresentation(alert: alert),
-            tintColor: Color(red: 0.898, green: 0.224, blue: 0.208)
+            tintColor: Color(red: 0.898, green: 0.224, blue: 0.208) // AppColors.primaryRed
         )
-        let configuration = AlarmConfiguration(
+        // AlarmConfiguration is nested in AlarmManager; use .alarm factory for fixed-time alarms
+        let configuration = AlarmManager.AlarmConfiguration.alarm(
             schedule: .fixed(alarm.triggerDate),
             attributes: attributes
         )
@@ -49,8 +52,9 @@ final class AlarmKitScheduler {
         )
     }
 
-    func cancel(alarmId: Int) async throws {
-        try await AlarmManager.shared.cancel(id: alarmUUID(alarmId))
+    // cancel(id:) is throws-only (not async) per AlarmKit API
+    func cancel(alarmId: Int) throws {
+        try AlarmManager.shared.cancel(id: alarmUUID(alarmId))
     }
 
     // MARK: - Pending alarm detection (called on app foreground)
@@ -60,7 +64,7 @@ final class AlarmKitScheduler {
         let stored = AlarmStore.shared.getAll()
         guard !stored.isEmpty else { return [] }
 
-        let kitAlarms = AlarmManager.shared.alarms  // synchronous property
+        let kitAlarms = (try? AlarmManager.shared.alarms) ?? []   // throws in 26.5
         let activeUUIDs = Set(kitAlarms.map { $0.id })
         return Set(stored.filter { activeUUIDs.contains(alarmUUID($0.id)) }.map { $0.id })
     }
@@ -78,13 +82,13 @@ final class AlarmKitScheduler {
 // AlarmKit not available in this SDK (Xcode < 26).
 // AlarmEngine falls through to NotificationFallback at runtime anyway,
 // but this stub keeps the file compilable on older SDKs.
-@available(iOS 26.0, *)
+@available(iOS 26.1, *)
 final class AlarmKitScheduler {
     static let shared = AlarmKitScheduler()
     private init() {}
     func requestAuthorization() async -> Bool { false }
     func schedule(_ alarm: AlarmData) async throws {}
-    func cancel(alarmId: Int) async throws {}
+    func cancel(alarmId: Int) throws {}
     func pendingAlarmIds() async -> Set<Int> { [] }
 }
 #endif
