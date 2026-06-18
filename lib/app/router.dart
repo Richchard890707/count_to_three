@@ -4,10 +4,16 @@ import 'package:count_to_three/features/reminder/presentation/screens/alarm_list
 import 'package:count_to_three/features/reminder/presentation/screens/alarm_edit_screen.dart';
 import 'package:count_to_three/features/calendar/presentation/screens/calendar_screen.dart';
 import 'package:count_to_three/features/auth/presentation/screens/settings_screen.dart';
+import 'package:count_to_three/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:count_to_three/features/alarm_engine/presentation/screens/alarm_ring_screen.dart';
 
-final appRouter = GoRouter(
-  initialLocation: '/alarms',
+GoRouter buildRouter(bool onboarded) => GoRouter(
+  initialLocation: onboarded ? '/alarms' : '/onboarding',
   routes: [
+    GoRoute(
+      path: '/onboarding',
+      builder: (context, state) => const OnboardingScreen(),
+    ),
     ShellRoute(
       builder: (context, state, child) => AppShell(child: child),
       routes: [
@@ -40,8 +46,22 @@ final appRouter = GoRouter(
       },
     ),
     GoRoute(
+      path: '/alarm/ring',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return AlarmRingScreen(
+          alarmId: extra?['alarmId'] as int? ?? 0,
+          reminderId: extra?['reminderId'] as String? ?? '',
+          title: extra?['title'] as String? ?? '鬧鐘',
+        );
+      },
+    ),
+    GoRoute(
       path: '/settings',
       builder: (context, state) => const SettingsScreen(),
     ),
   ],
 );
+
+// Keep backward-compatible export for any code that references appRouter directly
+final appRouter = buildRouter(true);

@@ -2,6 +2,7 @@ import 'package:count_to_three/app/theme/app_colors.dart';
 import 'package:count_to_three/features/alarm_engine/domain/models/alarm_engine_event.dart';
 import 'package:count_to_three/features/reminder/presentation/controllers/alarm_list_controller.dart';
 import 'package:count_to_three/shared/database/app_database.dart';
+import 'package:count_to_three/shared/widgets/skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -26,7 +27,7 @@ class AlarmListScreen extends ConsumerWidget {
 
     return reminders.when(
       data: (list) => list.isEmpty ? const _EmptyState() : _ReminderList(reminders: list),
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const SkeletonAlarmList(),
       error: (e, _) => Center(child: Text('錯誤：$e')),
     );
   }

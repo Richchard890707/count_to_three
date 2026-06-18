@@ -26,6 +26,8 @@
 		486A251F4C9C41D28FE3856E /* AlarmPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E6C68CDD7B34FA38A74127F /* AlarmPlugin.swift */; };
 		581A614AF29A4220995FA407 /* AlarmStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A57E064E6748388F6F11F3 /* AlarmStore.swift */; };
 		AF8F648A003944AB866A2AF5 /* NotificationFallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC2FB07DE19E4E1B8915C981 /* NotificationFallback.swift */; };
+		CW11110000111100001111B1 /* CountWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = CW11110000111100001111A1 /* CountWidget.swift */; };
+		CW11110000111100001111B2 /* CountWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = CW11110000111100001111A4 /* CountWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,6 +40,16 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXContainerItemProxy CountWidget */
+		CW11110000111100001111G1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CW11110000111100001111E1;
+			remoteInfo = CountWidget;
+		};
+/* End PBXContainerItemProxy CountWidget */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		9705A1C41CF9048500538489 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -47,6 +59,17 @@
 			files = (
 			);
 			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CW11110000111100001111H1 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				CW11110000111100001111B2 /* CountWidget.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -85,6 +108,10 @@
 		4E6C68CDD7B34FA38A74127F /* AlarmPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmPlugin.swift; sourceTree = "<group>"; };
 		D1A57E064E6748388F6F11F3 /* AlarmStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmStore.swift; sourceTree = "<group>"; };
 		AC2FB07DE19E4E1B8915C981 /* NotificationFallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationFallback.swift; sourceTree = "<group>"; };
+		CW11110000111100001111A1 /* CountWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountWidget.swift; sourceTree = "<group>"; };
+		CW11110000111100001111A2 /* CountWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CountWidget.entitlements; sourceTree = "<group>"; };
+		CW11110000111100001111A3 /* CountWidgetInfo.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CW11110000111100001111A4 /* CountWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CountWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,6 +129,13 @@
 			files = (
 				78A318202AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage in Frameworks */,
 				020C852D6DC9462C94D43664 /* Pods_Runner.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CW11110000111100001111D2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -133,6 +167,7 @@
 			children = (
 				9740EEB11CF90186004384FC /* Flutter */,
 				97C146F01CF9000F007C117D /* Runner */,
+				CW11110000111100001111C1 /* CountWidget */,
 				97C146EF1CF9000F007C117D /* Products */,
 				331C8082294A63A400263BE5 /* RunnerTests */,
 				7BA14EFF016F46515E015890 /* GoogleService-Info.plist */,
@@ -146,8 +181,19 @@
 			children = (
 				97C146EE1CF9000F007C117D /* Runner.app */,
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
+				CW11110000111100001111A4 /* CountWidget.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		CW11110000111100001111C1 /* CountWidget */ = {
+			isa = PBXGroup;
+			children = (
+				CW11110000111100001111A1 /* CountWidget.swift */,
+				CW11110000111100001111A2 /* CountWidget.entitlements */,
+				CW11110000111100001111A3 /* CountWidgetInfo.plist */,
+			);
+			path = CountWidget;
 			sourceTree = "<group>";
 		};
 		A87F0BFBFBE240118F4B948D /* Alarm */ = {
@@ -238,10 +284,12 @@
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				7E04AC612112B58CDF144E87 /* [CP] Embed Pods Frameworks */,
+				CW11110000111100001111H1 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				CW11110000111100001111G2 /* PBXTargetDependency */,
 			);
 			name = Runner;
 			packageProductDependencies = (
@@ -250,6 +298,23 @@
 			productName = Runner;
 			productReference = 97C146EE1CF9000F007C117D /* Runner.app */;
 			productType = "com.apple.product-type.application";
+		};
+		CW11110000111100001111E1 /* CountWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CW11110000111100001111F4 /* Build configuration list for PBXNativeTarget "CountWidget" */;
+			buildPhases = (
+				CW11110000111100001111D1 /* Sources */,
+				CW11110000111100001111D2 /* Frameworks */,
+				CW11110000111100001111D3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CountWidget;
+			productName = CountWidget;
+			productReference = CW11110000111100001111A4 /* CountWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -268,6 +333,9 @@
 					97C146ED1CF9000F007C117D = {
 						CreatedOnToolsVersion = 7.3.1;
 						LastSwiftMigration = 1100;
+					};
+					CW11110000111100001111E1 = {
+						CreatedOnToolsVersion = 16.0;
 					};
 				};
 			};
@@ -289,6 +357,7 @@
 			targets = (
 				97C146ED1CF9000F007C117D /* Runner */,
 				331C8080294A63A400263BE5 /* RunnerTests */,
+				CW11110000111100001111E1 /* CountWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -310,6 +379,13 @@
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
 				14E103EB841E5B7A890BF761 /* GoogleService-Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CW11110000111100001111D3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -436,6 +512,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		CW11110000111100001111D1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CW11110000111100001111B1 /* CountWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -443,6 +527,11 @@
 			isa = PBXTargetDependency;
 			target = 97C146ED1CF9000F007C117D /* Runner */;
 			targetProxy = 331C8085294A63A400263BE5 /* PBXContainerItemProxy */;
+		};
+		CW11110000111100001111G2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CW11110000111100001111E1 /* CountWidget */;
+			targetProxy = CW11110000111100001111G1 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -743,6 +832,76 @@
 			};
 			name = Release;
 		};
+		CW11110000111100001111F1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = CountWidget/CountWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = CountWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.countToThree.CountWidget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		CW11110000111100001111F2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = CountWidget/CountWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = CountWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.countToThree.CountWidget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		CW11110000111100001111F3 /* Profile */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = CountWidget/CountWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = CountWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.countToThree.CountWidget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Profile;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -772,6 +931,16 @@
 				97C147061CF9000F007C117D /* Debug */,
 				97C147071CF9000F007C117D /* Release */,
 				249021D4217E4FDB00AE95B9 /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CW11110000111100001111F4 /* Build configuration list for PBXNativeTarget "CountWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CW11110000111100001111F1 /* Debug */,
+				CW11110000111100001111F2 /* Release */,
+				CW11110000111100001111F3 /* Profile */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

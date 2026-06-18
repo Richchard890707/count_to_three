@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:count_to_three/core/providers/auth_provider.dart';
 import 'package:count_to_three/features/auth/domain/models/app_user.dart';
+import 'package:count_to_three/shared/widgets/skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,7 +27,7 @@ class SettingsScreen extends ConsumerWidget {
           authState.when(
             data: (user) =>
                 user != null ? _SignedInBody(user: user) : const _SignedOutBody(),
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const _SettingsSkeleton(),
             error: (e, _) => Center(child: Text('錯誤：$e')),
           ),
         ],
@@ -94,6 +95,42 @@ class _BatteryGuidanceCardState extends State<_BatteryGuidanceCard> {
               ),
         onTap: isOk ? null : _requestIgnore,
       ),
+    );
+  }
+}
+
+// ── Settings skeleton ─────────────────────────────────────────────────────────
+
+class _SettingsSkeleton extends StatelessWidget {
+  const _SettingsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Card(
+          child: ListTile(
+            leading: const SkeletonBox(width: 40, height: 40, radius: 20),
+            title: SkeletonBox(width: 120, height: 16, radius: 4),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: SkeletonBox(width: 180, height: 12, radius: 4),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Card(
+          child: ListTile(
+            leading: const SkeletonBox(width: 24, height: 24, radius: 4),
+            title: SkeletonBox(width: 80, height: 16, radius: 4),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: SkeletonBox(width: 140, height: 12, radius: 4),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
