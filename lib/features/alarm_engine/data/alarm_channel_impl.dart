@@ -21,6 +21,10 @@ class AlarmChannelImpl implements AlarmScheduler {
       _method.invokeMethod('cancelAlarm', alarmId);
 
   @override
+  Future<void> snoozeAlarm(int alarmId) =>
+      _method.invokeMethod('snoozeAlarm', alarmId);
+
+  @override
   Stream<AlarmEngineEvent> get events => _event
       .receiveBroadcastStream()
       .cast<Map<dynamic, dynamic>>()

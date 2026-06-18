@@ -53,9 +53,7 @@ class _AlarmRingScreenState extends ConsumerState<AlarmRingScreen>
   }
 
   Future<void> _snooze() async {
-    // Cancel current, the native side handles snooze via NotificationFallback/AlarmKit
-    // Here we just dismiss the ring screen — native snooze action already re-scheduled
-    await ref.read(alarmSchedulerProvider).cancelAlarm(widget.alarmId);
+    await ref.read(alarmSchedulerProvider).snoozeAlarm(widget.alarmId);
     if (mounted) context.go('/alarms');
   }
 

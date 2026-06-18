@@ -63,6 +63,20 @@ final class AlarmPlugin: NSObject {
                 }
             }
 
+        case "snoozeAlarm":
+            guard let alarmId = call.arguments as? Int else {
+                result(FlutterError(code: "INVALID_ARGS", message: "Expected Int alarmId", details: nil))
+                return
+            }
+            Task {
+                do {
+                    try await AlarmEngine.shared.snooze(alarmId: alarmId)
+                    result(nil)
+                } catch {
+                    result(FlutterError(code: "SNOOZE_FAILED", message: error.localizedDescription, details: nil))
+                }
+            }
+
         case "scheduleNotification":
             guard
                 let args        = call.arguments as? [String: Any],

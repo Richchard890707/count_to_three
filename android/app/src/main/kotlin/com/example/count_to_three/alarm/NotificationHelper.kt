@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
+import com.example.count_to_three.MainActivity
 
 object NotificationHelper {
     private const val CHANNEL_ID = "alarm_firing"
@@ -28,8 +29,9 @@ object NotificationHelper {
     }
 
     fun buildFiringNotification(context: Context, title: String, alarmId: Int): Notification {
-        val fsiIntent = Intent(context, AlarmActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_USER_ACTION
+        val fsiIntent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            action = "ALARM_RING"
             putExtra("alarm_id", alarmId)
         }
         val fsiPending = PendingIntent.getActivity(
@@ -58,7 +60,7 @@ object NotificationHelper {
         )
 
         return NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setSmallIcon(R.drawable.ic_alarm_notif)
             .setContentTitle(title)
             .setContentText("點擊查看")
             .setCategory(NotificationCompat.CATEGORY_ALARM)

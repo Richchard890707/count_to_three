@@ -45,6 +45,10 @@ class AlarmPlugin(
                 AlarmEngine.cancelAlarm(context, (call.arguments as Number).toInt())
                 result.success(null)
             }
+            "snoozeAlarm" -> {
+                AlarmEngine.snoozeAlarm(context, (call.arguments as Number).toInt())
+                result.success(null)
+            }
             "getPendingAlarms" -> result.success(AlarmEngine.getPendingAlarms())
             "battery.isIgnoring" -> {
                 val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager

@@ -35,6 +35,42 @@ final class AlarmEngine {
         NotificationFallback.shared.schedule(alarm)
     }
 
+    // MARK: - Snooze
+
+    func snooze(alarmId: Int) async throws {
+        guard var alarm = AlarmStore.shared.get(alarmId) else { return }
+
+        if alarm.snoozeCount >= alarm.maxSnoozeCount {
+            // Max snoozes reached — just dismiss
+            try await cancel(alarmId: alarmId)
+            AlarmEventBus.shared.emit([
+                "type": "dismissed",
+                "alarmId": alarmId,
+                "reminderId": alarm.reminderId,
+                "auto": true,
+            ])
+            return
+        }
+
+        // Cancel current alarm
+        if #available(iOS 26.1, *) { try? AlarmKitScheduler.shared.cancel(alarmId: alarmId) }
+        NotificationFallback.shared.cancel(alarmId: alarmId)
+
+        // Reschedule
+        alarm.snoozeCount += 1
+        alarm.scheduledAt = Int(Date().timeIntervalSince1970 * 1000) + alarm.snoozeMinutes * 60_000
+        AlarmStore.shared.put(alarm)
+
+        try await schedule(alarm: alarm)
+
+        AlarmEventBus.shared.emit([
+            "type": "snoozed",
+            "alarmId": alarmId,
+            "reminderId": alarm.reminderId,
+            "snoozeCount": alarm.snoozeCount,
+        ])
+    }
+
     // MARK: - Cancel
 
     func cancel(alarmId: Int) async throws {

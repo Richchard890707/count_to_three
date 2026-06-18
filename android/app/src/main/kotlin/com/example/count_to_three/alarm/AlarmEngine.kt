@@ -33,6 +33,22 @@ object AlarmEngine {
         AlarmStore.remove(context, alarmId)
     }
 
+    fun snoozeAlarm(context: Context, alarmId: Int) {
+        val alarm = AlarmStore.get(alarmId) ?: return
+        if (alarm.snoozeCount >= alarm.maxSnoozeCount) {
+            cancelAlarm(context, alarmId)
+            AlarmEventBus.emit(com.example.count_to_three.alarm.model.AlarmEvent.Dismissed(alarmId, alarm.reminderId, auto = true))
+            return
+        }
+        val snoozed = alarm.copy(
+            snoozeCount = alarm.snoozeCount + 1,
+            scheduledAt = System.currentTimeMillis() + alarm.snoozeMinutes * 60_000L,
+        )
+        AlarmStore.put(context, snoozed)
+        AlarmScheduler.schedule(context, snoozed)
+        AlarmEventBus.emit(com.example.count_to_three.alarm.model.AlarmEvent.Snoozed(alarmId, alarm.reminderId, snoozed.snoozeCount))
+    }
+
     fun getPendingAlarms(): List<Map<String, Any>> =
         AlarmStore.getAll().map {
             mapOf(

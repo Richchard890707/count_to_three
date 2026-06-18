@@ -4,5 +4,6 @@ import 'package:count_to_three/features/alarm_engine/domain/models/alarm_request
 abstract interface class AlarmScheduler {
   Future<void> scheduleAlarm(AlarmRequest request);
   Future<void> cancelAlarm(int alarmId);
+  Future<void> snoozeAlarm(int alarmId);
   Stream<AlarmEngineEvent> get events;
 }
