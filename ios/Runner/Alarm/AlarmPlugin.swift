@@ -3,6 +3,9 @@ import Flutter
 import Foundation
 import UIKit
 import UserNotifications
+#if canImport(AlarmKit)
+import AlarmKit
+#endif
 
 final class AlarmPlugin: NSObject {
     static let shared = AlarmPlugin()
@@ -147,6 +150,27 @@ final class AlarmPlugin: NSObject {
 
         case "alarm.stopTestRing":
             // System sounds can't be stopped mid-play; no-op
+            result(nil)
+
+        case "alarmkit.isAuthorized":
+            #if canImport(AlarmKit)
+            if #available(iOS 26.1, *) {
+                Task {
+                    // AlarmManager.shared.alarms throws if not authorized — use as status probe.
+                    let authorized = (try? AlarmManager.shared.alarms) != nil
+                    result(authorized)
+                }
+                return
+            }
+            #endif
+            result(true) // < iOS 26: no AlarmKit needed, UNNotification fallback handles it
+
+        case "alarmkit.openSettings":
+            DispatchQueue.main.async {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
             result(nil)
 
         case "badge.setCount":

@@ -113,9 +113,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // iOS-only: notification permission guidance
+          // iOS-only: notification + AlarmKit permission guidance
           if (Platform.isIOS) ...[
             const _IosNotifCard(),
+            const _AlarmKitCard(),
             const SizedBox(height: 16),
           ],
 
@@ -316,6 +317,73 @@ class _IosNotifCardState extends State<_IosNotifCard>
         trailing: TextButton(
           onPressed: _open,
           child: const Text('前往開啟'),
+        ),
+      ),
+    );
+  }
+}
+
+// ── AlarmKit permission (iOS 26+) ─────────────────────────────────────────────
+
+class _AlarmKitCard extends StatefulWidget {
+  const _AlarmKitCard();
+  @override
+  State<_AlarmKitCard> createState() => _AlarmKitCardState();
+}
+
+class _AlarmKitCardState extends State<_AlarmKitCard>
+    with WidgetsBindingObserver {
+  static const _channel = MethodChannel('app.ontime/alarm');
+  bool? _authorized;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _check();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _check();
+  }
+
+  Future<void> _check() async {
+    try {
+      final ok = await _channel.invokeMethod<bool>('alarmkit.isAuthorized');
+      if (mounted) setState(() => _authorized = ok ?? true);
+    } catch (_) {
+      if (mounted) setState(() => _authorized = true);
+    }
+  }
+
+  Future<void> _open() async {
+    try {
+      await _channel.invokeMethod('alarmkit.openSettings');
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isOk = _authorized ?? true;
+    if (isOk) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Card(
+        child: ListTile(
+          leading: const Icon(Icons.alarm_off_outlined, color: Colors.orange),
+          title: const Text('AlarmKit 鬧鐘權限'),
+          subtitle: const Text('請授權 AlarmKit 以在靜音模式下準時響鈴（需 iOS 26+）'),
+          trailing: TextButton(
+            onPressed: _open,
+            child: const Text('前往開啟'),
+          ),
         ),
       ),
     );
