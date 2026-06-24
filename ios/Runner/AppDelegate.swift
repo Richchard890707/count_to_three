@@ -14,7 +14,9 @@ import UserNotifications
 
     func didInitializeImplicitFlutterEngine(_ engineBridge: any FlutterImplicitEngineBridge) {
         GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
-        AlarmPlugin.shared.setup(messenger: engineBridge.applicationRegistrar.messenger())
+        let messenger = engineBridge.applicationRegistrar.messenger()
+        AlarmPlugin.shared.setup(messenger: messenger)
+        DataPlugin.shared.setup(messenger: messenger)
     }
 
     // MARK: - UNUserNotificationCenterDelegate (iOS ≤25 fallback)

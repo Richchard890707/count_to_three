@@ -20,6 +20,12 @@ class AppShell extends ConsumerWidget {
       selectedIcon: Icons.calendar_today,
       label: '行事曆',
     ),
+    (
+      path: '/stats',
+      icon: Icons.bar_chart_outlined,
+      selectedIcon: Icons.bar_chart,
+      label: '統計',
+    ),
   ];
 
   int _selectedIndex(String location) {
@@ -34,6 +40,7 @@ class AppShell extends ConsumerWidget {
     final location = GoRouterState.of(context).uri.toString();
     final selectedIndex = _selectedIndex(location);
     final isCalendar = selectedIndex == 1;
+    final isStats = selectedIndex == 2;
 
     return Scaffold(
       appBar: AppBar(
@@ -47,19 +54,21 @@ class AppShell extends ConsumerWidget {
         ],
       ),
       body: child,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (isCalendar) {
-            final selectedDay = ref.read(calendarSelectedDayProvider);
-            final dateStr =
-                '${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}';
-            context.push('/alarm/edit?date=$dateStr');
-          } else {
-            context.push('/alarm/edit');
-          }
-        },
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: isStats
+          ? null
+          : FloatingActionButton(
+              onPressed: () {
+                if (isCalendar) {
+                  final selectedDay = ref.read(calendarSelectedDayProvider);
+                  final dateStr =
+                      '${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}';
+                  context.push('/alarm/edit?date=$dateStr');
+                } else {
+                  context.push('/alarm/edit');
+                }
+              },
+              child: const Icon(Icons.add),
+            ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedIndex,
         onDestinationSelected: (i) => context.go(_destinations[i].path),

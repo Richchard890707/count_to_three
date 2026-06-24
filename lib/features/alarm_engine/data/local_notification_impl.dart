@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:count_to_three/features/alarm_engine/domain/models/notification_request.dart';
@@ -15,6 +17,7 @@ class LocalNotificationImpl implements NotificationScheduler {
 
   final FlutterLocalNotificationsPlugin _fln;
   final MethodChannel _iosChannel;
+  final _tapController = StreamController<NotificationTapEvent>.broadcast();
 
   static const _channelId = 'reminders';
   static const _channelName = '提醒通知';
@@ -25,12 +28,30 @@ class LocalNotificationImpl implements NotificationScheduler {
       _channelName,
       importance: Importance.high,
       priority: Priority.high,
+      actions: [
+        AndroidNotificationAction(
+          'complete',
+          '✓ 完成',
+          showsUserInterface: false,
+          cancelNotification: true,
+        ),
+        AndroidNotificationAction(
+          'snooze',
+          '延後 5 分',
+          showsUserInterface: false,
+          cancelNotification: true,
+        ),
+      ],
     ),
     iOS: DarwinNotificationDetails(
       presentAlert: true,
       presentSound: true,
     ),
   );
+
+  @override
+  Stream<NotificationTapEvent> get tapEvents =>
+      Platform.isIOS ? const Stream.empty() : _tapController.stream;
 
   @override
   Future<void> initialize() async {
@@ -44,20 +65,41 @@ class LocalNotificationImpl implements NotificationScheduler {
         requestSoundPermission: false,
       ),
     );
-    await _fln.initialize(settings);
+    await _fln.initialize(
+      settings,
+      onDidReceiveNotificationResponse: Platform.isAndroid ? _onNotifTap : null,
+    );
 
-    // Register Android notification channel for NOTIFICATION-grade reminders
-    await _fln
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(
-          const AndroidNotificationChannel(
-            _channelId,
-            _channelName,
-            description: '行事曆事件與待辦的提醒通知',
-            importance: Importance.high,
-          ),
-        );
+    if (Platform.isAndroid) {
+      final android = _fln.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      // POST_NOTIFICATIONS permission — required on Android 13+ (API 33+).
+      await android?.requestNotificationsPermission();
+      // Register notification channel for NOTIFICATION-grade reminders.
+      await android?.createNotificationChannel(
+        const AndroidNotificationChannel(
+          _channelId,
+          _channelName,
+          description: '行事曆事件與待辦的提醒通知',
+          importance: Importance.high,
+        ),
+      );
+    }
+  }
+
+  void _onNotifTap(NotificationResponse response) {
+    final payload = response.payload;
+    if (payload == null) return;
+    try {
+      final map = jsonDecode(payload) as Map<String, dynamic>;
+      final reminderId = map['reminderId'] as String;
+      final scheduledAtMs = (map['scheduledAtMs'] as num).toInt();
+      _tapController.add(NotificationTapEvent(
+        reminderId: reminderId,
+        scheduledAtMs: scheduledAtMs,
+        isSnooze: response.actionId == 'snooze',
+      ));
+    } catch (_) {}
   }
 
   @override
@@ -78,6 +120,10 @@ class LocalNotificationImpl implements NotificationScheduler {
       request.body,
       tz.TZDateTime.from(request.triggerAt, tz.local),
       _notifDetails,
+      payload: jsonEncode({
+        'reminderId': request.reminderId,
+        'scheduledAtMs': request.triggerAt.millisecondsSinceEpoch,
+      }),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,

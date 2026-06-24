@@ -1,6 +1,7 @@
 package com.example.count_to_three.alarm
 
 import android.app.KeyguardManager
+import android.app.NotificationManager
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -35,6 +36,15 @@ class AlarmActivity : AppCompatActivity() {
         AlarmStore.init(this)
         refreshTitle()
         clockTick.run()
+
+        // As soon as AlarmActivity is visible, downgrade the trigger notification to the
+        // silent ongoing one so the heads-up banner is dismissed.
+        AlarmStore.get(alarmId)?.let { alarm ->
+            (getSystemService(NOTIFICATION_SERVICE) as NotificationManager).notify(
+                NotificationHelper.NOTIFICATION_ID,
+                NotificationHelper.buildFiringNotification(this, alarm.title, alarmId),
+            )
+        }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() { /* block back */ }
@@ -84,10 +94,10 @@ class AlarmActivity : AppCompatActivity() {
     }
 
     private fun sendToService(action: String) {
-        startService(Intent(this, AlarmService::class.java).apply {
-            this.action = action
-            putExtra("alarm_id", alarmId)
-        })
+        when (action) {
+            AlarmService.ACTION_STOP   -> AlarmService.stopAlarm(this, alarmId)
+            AlarmService.ACTION_SNOOZE -> AlarmService.snoozeAlarm(this, alarmId)
+        }
         finishAndRemoveTask()
     }
 }

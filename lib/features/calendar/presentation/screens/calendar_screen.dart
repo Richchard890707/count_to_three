@@ -108,17 +108,26 @@ class _EventDots extends StatelessWidget {
       padding: const EdgeInsets.only(top: 2),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: events.take(3).map((e) => _dot(e.reminder.alertLevel)).toList(),
+        children: events.take(3).map((e) => _dot(e)).toList(),
       ),
     );
   }
 
-  Widget _dot(String alertLevel) {
-    final color = switch (alertLevel) {
-      'ALARM' => Colors.red,
-      'NOTIFICATION' => Colors.blue,
-      _ => Colors.grey,
-    };
+  Widget _dot(CalendarEvent e) {
+    final Color color;
+    if (e.isCompleted) {
+      color = Colors.green;
+    } else if (e.isMissed) {
+      color = Colors.orange;
+    } else if (e.reminder.color != null) {
+      color = Color(int.parse('FF${e.reminder.color!.substring(1)}', radix: 16));
+    } else {
+      color = switch (e.reminder.alertLevel) {
+        'ALARM' => Colors.red,
+        'NOTIFICATION' => Colors.blue,
+        _ => Colors.grey,
+      };
+    }
     return Container(
       width: 5,
       height: 5,

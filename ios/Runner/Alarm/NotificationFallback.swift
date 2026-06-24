@@ -8,9 +8,11 @@ import UserNotifications
 final class NotificationFallback {
     static let shared = NotificationFallback()
 
-    private let categoryId    = "ALARM_CATEGORY"
-    private let stopActionId  = "ALARM_STOP"
-    private let snoozeActionId = "ALARM_SNOOZE"
+    private let categoryId         = "ALARM_CATEGORY"
+    private let stopActionId       = "ALARM_STOP"
+    private let snoozeActionId     = "ALARM_SNOOZE"
+    private let reminderCategoryId = "REMINDER_CATEGORY"
+    private let completeActionId   = "REMINDER_COMPLETE"
 
     private init() {}
 
@@ -34,13 +36,25 @@ final class NotificationFallback {
             title: "貪睡",
             options: [.foreground]
         )
-        let category = UNNotificationCategory(
+        let alarmCategory = UNNotificationCategory(
             identifier: categoryId,
             actions: [stop, snooze],
             intentIdentifiers: [],
             options: .customDismissAction
         )
-        UNUserNotificationCenter.current().setNotificationCategories([category])
+        let complete = UNNotificationAction(
+            identifier: completeActionId,
+            title: "✓ 完成",
+            options: [.foreground]
+        )
+        let reminderCategory = UNNotificationCategory(
+            identifier: reminderCategoryId,
+            actions: [complete],
+            intentIdentifiers: [],
+            options: []
+        )
+        UNUserNotificationCenter.current()
+            .setNotificationCategories([alarmCategory, reminderCategory])
     }
 
     // MARK: - Schedule / Cancel
@@ -81,7 +95,8 @@ final class NotificationFallback {
         content.title = title
         content.body  = body ?? ""
         content.sound = .default
-        content.userInfo = ["notifId": id, "reminderId": reminderId]
+        content.categoryIdentifier = reminderCategoryId
+        content.userInfo = ["notifId": id, "reminderId": reminderId, "scheduledAtMs": triggerAtMs]
 
         let triggerDate = Date(timeIntervalSince1970: Double(triggerAtMs) / 1000)
         let components = Calendar.current.dateComponents(
@@ -106,19 +121,54 @@ final class NotificationFallback {
     // MARK: - Action handling (called from AppDelegate UNUserNotificationCenterDelegate)
 
     func handleNotificationResponse(_ response: UNNotificationResponse) {
-        let info     = response.notification.request.content.userInfo
+        let info = response.notification.request.content.userInfo
+
+        // NOTIFICATION-level simple notification (not an alarm): handle tap and "完成" action.
+        if let reminderId    = info["reminderId"]    as? String,
+           let scheduledAtMs = info["scheduledAtMs"] as? Int,
+           info["alarmId"] == nil {
+            let isDefaultTap = response.actionIdentifier == UNNotificationDefaultActionIdentifier
+            let isComplete   = response.actionIdentifier == completeActionId
+            if isDefaultTap || isComplete {
+                AlarmEventBus.shared.emit([
+                    "type": "notif_tapped",
+                    "reminderId": reminderId,
+                    "scheduledAtMs": scheduledAtMs,
+                ])
+            }
+            return
+        }
+
         guard let alarmId    = info["alarmId"]    as? Int,
               let reminderId = info["reminderId"] as? String else { return }
 
         switch response.actionIdentifier {
-        case stopActionId, UNNotificationDefaultActionIdentifier:
-            emitDismissed(alarmId: alarmId, reminderId: reminderId, auto: false)
+        case stopActionId:
+            let scheduledAtMs = AlarmStore.shared.get(alarmId)?.scheduledAt ?? 0
+            emitDismissed(alarmId: alarmId, reminderId: reminderId, scheduledAtMs: scheduledAtMs, auto: false)
             AlarmStore.shared.remove(alarmId)
+
+        case UNNotificationDefaultActionIdentifier:
+            // User tapped the notification body → bring to foreground and show ring screen
+            if let alarm = AlarmStore.shared.get(alarmId) {
+                AlarmEventBus.shared.emit([
+                    "type": "fired",
+                    "alarmId": alarmId,
+                    "reminderId": alarm.reminderId,
+                    "title": alarm.title,
+                    "scheduledAtMs": alarm.scheduledAt,
+                    "snoozeCount": alarm.snoozeCount,
+                    "maxSnoozeCount": alarm.maxSnoozeCount,
+                ])
+            } else {
+                emitDismissed(alarmId: alarmId, reminderId: reminderId, scheduledAtMs: 0, auto: false)
+            }
 
         case snoozeActionId:
             guard var alarm = AlarmStore.shared.get(alarmId) else { return }
+            let originalScheduledAt = alarm.scheduledAt
             if alarm.snoozeCount >= alarm.maxSnoozeCount {
-                emitDismissed(alarmId: alarmId, reminderId: reminderId, auto: true)
+                emitDismissed(alarmId: alarmId, reminderId: reminderId, scheduledAtMs: originalScheduledAt, auto: true)
                 AlarmStore.shared.remove(alarmId)
             } else {
                 alarm.scheduledAt = Int(Date().timeIntervalSince1970 * 1000)
@@ -130,12 +180,14 @@ final class NotificationFallback {
                     "type": "snoozed",
                     "alarmId": alarmId,
                     "reminderId": reminderId,
+                    "scheduledAtMs": originalScheduledAt,
                     "snoozeCount": alarm.snoozeCount,
                 ])
             }
 
         case UNNotificationDismissActionIdentifier:
-            emitDismissed(alarmId: alarmId, reminderId: reminderId, auto: false)
+            let dismissScheduledAtMs = AlarmStore.shared.get(alarmId)?.scheduledAt ?? 0
+            emitDismissed(alarmId: alarmId, reminderId: reminderId, scheduledAtMs: dismissScheduledAtMs, auto: false)
             AlarmStore.shared.remove(alarmId)
 
         default:
@@ -145,11 +197,12 @@ final class NotificationFallback {
 
     // MARK: - Private
 
-    private func emitDismissed(alarmId: Int, reminderId: String, auto: Bool) {
+    private func emitDismissed(alarmId: Int, reminderId: String, scheduledAtMs: Int, auto: Bool) {
         AlarmEventBus.shared.emit([
             "type": "dismissed",
             "alarmId": alarmId,
             "reminderId": reminderId,
+            "scheduledAtMs": scheduledAtMs,
             "auto": auto,
         ])
     }

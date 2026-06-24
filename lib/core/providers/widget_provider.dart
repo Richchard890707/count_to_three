@@ -7,24 +7,37 @@ const _appGroup = 'group.com.example.countToThree';
 const _iOSWidgetName = 'CountWidget';
 const _androidWidgetName = 'AlarmWidget';
 
-/// Writes the next upcoming alarm to home_widget storage and requests a widget refresh.
-/// Call this whenever the reminder list changes.
-Future<void> updateHomeWidget(List<Reminder> reminders) async {
+/// Writes the next upcoming alarm (by next pending occurrence) to home_widget
+/// storage and requests a widget refresh.
+Future<void> updateHomeWidget(List<Reminder> reminders, AppDatabase db) async {
   await HomeWidget.setAppGroupId(_appGroup);
 
   final now = DateTime.now().millisecondsSinceEpoch;
-  final next = reminders
-      .where((r) => r.startAt > now && !r.isDeleted)
-      .fold<Reminder?>(null, (best, r) => best == null || r.startAt < best.startAt ? r : best);
+  final nextMap = await db.occurrenceDao.getNextPendingScheduledAtMap();
 
-  if (next != null) {
-    final t = DateTime.fromMillisecondsSinceEpoch(next.startAt);
+  Reminder? bestReminder;
+  int? bestMs;
+
+  for (final r in reminders) {
+    if (r.isDeleted) continue;
+    // Prefer next pending occurrence; fall back to startAt for non-recurring.
+    final ms = nextMap[r.id] ?? r.startAt;
+    if (ms > now) {
+      if (bestMs == null || ms < bestMs) {
+        bestReminder = r;
+        bestMs = ms;
+      }
+    }
+  }
+
+  if (bestReminder != null && bestMs != null) {
+    final t = DateTime.fromMillisecondsSinceEpoch(bestMs);
     await Future.wait([
-      HomeWidget.saveWidgetData<String>('nextAlarmTitle', next.title),
+      HomeWidget.saveWidgetData<String>('nextAlarmTitle', bestReminder.title),
       HomeWidget.saveWidgetData<String>(
           'nextAlarmTime',
           '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}'),
-      HomeWidget.saveWidgetData<int>('nextAlarmMs', next.startAt),
+      HomeWidget.saveWidgetData<int>('nextAlarmMs', bestMs),
     ]);
   } else {
     await Future.wait([
@@ -43,9 +56,10 @@ Future<void> updateHomeWidget(List<Reminder> reminders) async {
 /// Provider that auto-updates the home widget whenever the reminder list changes.
 final homeWidgetSyncProvider = StreamProvider<void>((ref) async* {
   await HomeWidget.setAppGroupId(_appGroup);
-  final stream = ref.watch(appDatabaseProvider).reminderDao.watchAll();
+  final db = ref.watch(appDatabaseProvider);
+  final stream = db.reminderDao.watchAll();
   await for (final reminders in stream) {
-    await updateHomeWidget(reminders);
+    await updateHomeWidget(reminders, db);
     yield null;
   }
 });

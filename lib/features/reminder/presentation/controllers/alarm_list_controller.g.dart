@@ -24,6 +24,42 @@ final alarmEventsProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AlarmEventsRef = AutoDisposeStreamProviderRef<AlarmEngineEvent>;
+String _$alarmListSelectionHash() =>
+    r'ed5ef725e8232ee358198228587c0de19acb20bf';
+
+/// See also [AlarmListSelection].
+@ProviderFor(AlarmListSelection)
+final alarmListSelectionProvider =
+    AutoDisposeNotifierProvider<
+      AlarmListSelection,
+      AlarmListSelectionState
+    >.internal(
+      AlarmListSelection.new,
+      name: r'alarmListSelectionProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$alarmListSelectionHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$AlarmListSelection = AutoDisposeNotifier<AlarmListSelectionState>;
+String _$alarmFilterHash() => r'e07346c4a80d0302a08498d03e2fe56b08453d90';
+
+/// See also [AlarmFilter].
+@ProviderFor(AlarmFilter)
+final alarmFilterProvider =
+    AutoDisposeNotifierProvider<AlarmFilter, AlarmListFilterState>.internal(
+      AlarmFilter.new,
+      name: r'alarmFilterProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$alarmFilterHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$AlarmFilter = AutoDisposeNotifier<AlarmListFilterState>;
 String _$selectedReminderTypeHash() =>
     r'de613066cdbf10454dea87dcb0e21a3b9ba91a4e';
 
@@ -75,7 +111,7 @@ final selectedFreqProvider =
 
 typedef _$SelectedFreq = AutoDisposeNotifier<RecurrenceFreq>;
 String _$alarmListControllerHash() =>
-    r'fa67810886e623c769922ce6c3a0a24e4f360b50';
+    r'5eb605da2a2c07afeeea829d1fd5582c02325cb2';
 
 /// See also [AlarmListController].
 @ProviderFor(AlarmListController)

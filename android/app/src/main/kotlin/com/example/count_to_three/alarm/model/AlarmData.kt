@@ -10,6 +10,9 @@ data class AlarmData(
     val snoozeCount: Int = 0,
     val snoozeMinutes: Int = 5,
     val maxSnoozeCount: Int = 3,
+    val volumeRamp: Boolean = false,
+    val vibrate: Boolean = true,
+    val ringtoneUri: String? = null,
 ) {
     fun toJson(): JSONObject = JSONObject().apply {
         put("id", id)
@@ -19,6 +22,9 @@ data class AlarmData(
         put("snoozeCount", snoozeCount)
         put("snoozeMinutes", snoozeMinutes)
         put("maxSnoozeCount", maxSnoozeCount)
+        put("volumeRamp", volumeRamp)
+        put("vibrate", vibrate)
+        ringtoneUri?.let { put("ringtoneUri", it) }
     }
 
     companion object {
@@ -30,6 +36,9 @@ data class AlarmData(
             snoozeCount = json.optInt("snoozeCount", 0),
             snoozeMinutes = json.optInt("snoozeMinutes", 5),
             maxSnoozeCount = json.optInt("maxSnoozeCount", 3),
+            volumeRamp = json.optBoolean("volumeRamp", false),
+            vibrate = json.optBoolean("vibrate", true),
+            ringtoneUri = json.optString("ringtoneUri").takeIf { it.isNotEmpty() },
         )
     }
 }

@@ -40,6 +40,8 @@ final class AlarmEngine {
     func snooze(alarmId: Int) async throws {
         guard var alarm = AlarmStore.shared.get(alarmId) else { return }
 
+        let originalScheduledAt = alarm.scheduledAt
+
         if alarm.snoozeCount >= alarm.maxSnoozeCount {
             // Max snoozes reached — just dismiss
             try await cancel(alarmId: alarmId)
@@ -47,6 +49,7 @@ final class AlarmEngine {
                 "type": "dismissed",
                 "alarmId": alarmId,
                 "reminderId": alarm.reminderId,
+                "scheduledAtMs": originalScheduledAt,
                 "auto": true,
             ])
             return
@@ -67,6 +70,7 @@ final class AlarmEngine {
             "type": "snoozed",
             "alarmId": alarmId,
             "reminderId": alarm.reminderId,
+            "scheduledAtMs": originalScheduledAt,
             "snoozeCount": alarm.snoozeCount,
         ])
     }
@@ -95,6 +99,7 @@ final class AlarmEngine {
                 "type": "dismissed",
                 "alarmId": alarm.id,
                 "reminderId": alarm.reminderId,
+                "scheduledAtMs": alarm.scheduledAt,
                 "auto": false,
             ])
             AlarmStore.shared.remove(alarm.id)

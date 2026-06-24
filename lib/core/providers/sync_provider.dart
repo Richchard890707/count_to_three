@@ -9,4 +9,5 @@ part 'sync_provider.g.dart';
 SyncService syncService(SyncServiceRef ref) => FirestoreSyncService(
       reminderDao: ref.watch(appDatabaseProvider).reminderDao,
       recurrenceRuleDao: ref.watch(appDatabaseProvider).recurrenceRuleDao,
+      occurrenceDao: ref.watch(appDatabaseProvider).occurrenceDao,
     );

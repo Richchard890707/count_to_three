@@ -6,6 +6,9 @@ class AlarmRequest {
     required this.triggerAt,
     this.snoozeMinutes = 5,
     this.maxSnoozeCount = 3,
+    this.volumeRamp = false,
+    this.vibrate = true,
+    this.ringtoneUri,
   });
 
   final int alarmId;
@@ -14,6 +17,9 @@ class AlarmRequest {
   final DateTime triggerAt;
   final int snoozeMinutes;
   final int maxSnoozeCount;
+  final bool volumeRamp;
+  final bool vibrate;
+  final String? ringtoneUri;
 
   Map<String, dynamic> toMap() => {
         'alarmId': alarmId,
@@ -22,5 +28,8 @@ class AlarmRequest {
         'triggerAtMs': triggerAt.millisecondsSinceEpoch,
         'snoozeMinutes': snoozeMinutes,
         'maxSnoozeCount': maxSnoozeCount,
+        'volumeRamp': volumeRamp,
+        'vibrate': vibrate,
+        if (ringtoneUri != null) 'ringtoneUri': ringtoneUri,
       };
 }

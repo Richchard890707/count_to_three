@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:count_to_three/shared/database/app_database.dart';
+import 'package:count_to_three/shared/database/daos/occurrence_dao.dart';
 import 'package:count_to_three/shared/database/daos/reminder_dao.dart';
 import 'package:drift/drift.dart';
 import '../domain/sync_service.dart';
@@ -9,13 +10,16 @@ class FirestoreSyncService implements SyncService {
   FirestoreSyncService({
     required this.reminderDao,
     required this.recurrenceRuleDao,
+    required this.occurrenceDao,
   }) : _firestore = FirebaseFirestore.instance;
 
   final ReminderDao reminderDao;
   final RecurrenceRuleDao recurrenceRuleDao;
+  final OccurrenceDao occurrenceDao;
   final FirebaseFirestore _firestore;
 
   StreamSubscription<QuerySnapshot>? _subscription;
+  StreamSubscription<QuerySnapshot>? _occSubscription;
   String? _uid;
 
   CollectionReference<Map<String, dynamic>> _col(String uid) =>
@@ -24,12 +28,17 @@ class FirestoreSyncService implements SyncService {
   CollectionReference<Map<String, dynamic>> _rulesCol(String uid) =>
       _firestore.collection('users').doc(uid).collection('recurrenceRules');
 
+  CollectionReference<Map<String, dynamic>> _occCol(String uid) =>
+      _firestore.collection('users').doc(uid).collection('occurrences');
+
   // ── Public API ─────────────────────────────────────────────────────────────
 
   @override
   Future<void> startSync(String uid) async {
     await _subscription?.cancel();
+    await _occSubscription?.cancel();
     _subscription = null;
+    _occSubscription = null;
     _uid = uid;
 
     await pushPending();
@@ -40,8 +49,11 @@ class FirestoreSyncService implements SyncService {
   @override
   Future<void> stopSync() async {
     await _subscription?.cancel();
+    await _occSubscription?.cancel();
     _subscription = null;
+    _occSubscription = null;
     await reminderDao.resetPendingToLocalOnly();
+    await occurrenceDao.resetPendingToLocalOnly();
     _uid = null;
   }
 
@@ -51,7 +63,8 @@ class FirestoreSyncService implements SyncService {
     if (uid == null) return;
 
     final pending = await reminderDao.getPendingSync();
-    if (pending.isEmpty) return;
+    final pendingOccs = await occurrenceDao.getPendingSync();
+    if (pending.isEmpty && pendingOccs.isEmpty) return;
 
     // Collect rule IDs referenced by pending reminders
     final ruleIds = pending
@@ -61,6 +74,7 @@ class FirestoreSyncService implements SyncService {
 
     final col = _col(uid);
     final rulesCol = _rulesCol(uid);
+    final occCol = _occCol(uid);
     final batch = _firestore.batch();
 
     for (final r in pending) {
@@ -72,11 +86,17 @@ class FirestoreSyncService implements SyncService {
         batch.set(rulesCol.doc(rule.id), _ruleToMap(rule));
       }
     }
+    for (final occ in pendingOccs) {
+      batch.set(occCol.doc(occ.id), _occToMap(occ));
+    }
 
     await batch.commit();
 
     for (final r in pending) {
       await reminderDao.updateSyncStatus(r.id, 'synced');
+    }
+    for (final occ in pendingOccs) {
+      await occurrenceDao.updateSyncStatus(occ.id, 'synced');
     }
   }
 
@@ -93,6 +113,11 @@ class FirestoreSyncService implements SyncService {
     for (final doc in remindersSnap.docs) {
       await _upsertLww(doc.id, doc.data());
     }
+
+    final occSnap = await _occCol(uid).get();
+    for (final doc in occSnap.docs) {
+      await _upsertOccurrenceLww(doc.id, doc.data());
+    }
   }
 
   void _subscribeSnapshots(String uid) {
@@ -101,7 +126,6 @@ class FirestoreSyncService implements SyncService {
         if (change.type == DocumentChangeType.removed) continue;
         final data = change.doc.data()!;
 
-        // Ensure the referenced rule exists locally before upserting the reminder
         final ruleId = data['recurrenceRuleId'] as String?;
         if (ruleId != null) {
           final existing = await recurrenceRuleDao.findById(ruleId);
@@ -118,6 +142,13 @@ class FirestoreSyncService implements SyncService {
         await _upsertLww(change.doc.id, data);
       }
     });
+
+    _occSubscription = _occCol(uid).snapshots().listen((snapshot) async {
+      for (final change in snapshot.docChanges) {
+        if (change.type == DocumentChangeType.removed) continue;
+        await _upsertOccurrenceLww(change.doc.id, change.doc.data()!);
+      }
+    });
   }
 
   /// LWW conflict resolution: remote wins only if remote.updatedAt > local.updatedAt.
@@ -129,6 +160,25 @@ class FirestoreSyncService implements SyncService {
 
     await reminderDao.upsert(_fromMap(id, data));
   }
+
+  Future<void> _upsertOccurrenceLww(String id, Map<String, dynamic> data) async {
+    final remoteUpdatedAt = (data['updatedAt'] as num?)?.toInt() ?? 0;
+    final local = await occurrenceDao.findById(id);
+
+    if (local != null && (local.updatedAt ?? 0) >= remoteUpdatedAt) return;
+
+    await occurrenceDao.upsert(OccurrencesCompanion(
+      id: Value(id),
+      reminderId: Value(data['reminderId'] as String? ?? ''),
+      scheduledAt: Value((data['scheduledAt'] as num?)?.toInt() ?? 0),
+      state: Value(data['state'] as String? ?? 'pending'),
+      snoozeCount: Value((data['snoozeCount'] as num?)?.toInt() ?? 0),
+      syncStatus: const Value('synced'),
+      updatedAt: Value(remoteUpdatedAt),
+    ));
+  }
+
+  // ── Serialisation ──────────────────────────────────────────────────────────
 
   Map<String, dynamic> _toMap(Reminder r) => {
         'id': r.id,
@@ -146,6 +196,7 @@ class FirestoreSyncService implements SyncService {
         'updatedAt': r.updatedAt,
         'isDeleted': r.isDeleted,
         'version': r.version,
+        'color': r.color,
       };
 
   RemindersCompanion _fromMap(String id, Map<String, dynamic> d) =>
@@ -165,8 +216,18 @@ class FirestoreSyncService implements SyncService {
         updatedAt: Value((d['updatedAt'] as num?)?.toInt() ?? 0),
         isDeleted: Value(d['isDeleted'] as bool? ?? false),
         version: Value((d['version'] as num?)?.toInt() ?? 1),
+        color: Value(d['color'] as String?),
         syncStatus: const Value('synced'),
       );
+
+  Map<String, dynamic> _occToMap(Occurrence o) => {
+        'id': o.id,
+        'reminderId': o.reminderId,
+        'scheduledAt': o.scheduledAt,
+        'state': o.state,
+        'snoozeCount': o.snoozeCount,
+        'updatedAt': o.updatedAt,
+      };
 
   Map<String, dynamic> _ruleToMap(RecurrenceRule r) => {
         'id': r.id,

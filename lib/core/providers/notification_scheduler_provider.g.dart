@@ -24,5 +24,24 @@ final notificationSchedulerProvider = Provider<NotificationScheduler>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef NotificationSchedulerRef = ProviderRef<NotificationScheduler>;
+String _$notificationTapEventsHash() =>
+    r'35833283878cd19ab203e8d27fb864e8eea78b1f';
+
+/// See also [notificationTapEvents].
+@ProviderFor(notificationTapEvents)
+final notificationTapEventsProvider =
+    StreamProvider<NotificationTapEvent>.internal(
+      notificationTapEvents,
+      name: r'notificationTapEventsProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$notificationTapEventsHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef NotificationTapEventsRef = StreamProviderRef<NotificationTapEvent>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

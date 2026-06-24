@@ -10,6 +10,7 @@ import 'tables/reminders_table.dart';
 import 'tables/recurrence_rules_table.dart';
 import 'tables/alarm_configs_table.dart';
 import 'tables/occurrences_table.dart';
+import 'daos/alarm_config_dao.dart';
 import 'daos/reminder_dao.dart';
 import 'daos/occurrence_dao.dart';
 import 'daos/recurrence_rule_dao.dart';
@@ -19,27 +20,44 @@ export 'tables/reminders_table.dart';
 export 'tables/recurrence_rules_table.dart';
 export 'tables/alarm_configs_table.dart';
 export 'tables/occurrences_table.dart';
+export 'daos/alarm_config_dao.dart';
 export 'daos/recurrence_rule_dao.dart';
 
 part 'app_database.g.dart';
 
 @DriftDatabase(
   tables: [Users, Reminders, RecurrenceRules, AlarmConfigs, Occurrences],
-  daos: [ReminderDao, OccurrenceDao, RecurrenceRuleDao],
+  daos: [ReminderDao, OccurrenceDao, RecurrenceRuleDao, AlarmConfigDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (m, from, to) async {
       if (from < 2) {
-        // M2 → add alert_level: ALARM | NOTIFICATION | SILENT
         await m.addColumn(reminders, reminders.alertLevel);
+      }
+      if (from < 3) {
+        await m.addColumn(occurrences, occurrences.syncStatus);
+        await m.addColumn(occurrences, occurrences.userId);
+        await m.addColumn(occurrences, occurrences.updatedAt);
+        // Queue any existing completed/missed occurrences for their first cloud push.
+        await customStatement(
+          "UPDATE occurrences SET sync_status = 'pending', "
+          "updated_at = ${DateTime.now().millisecondsSinceEpoch} "
+          "WHERE state IN ('completed', 'missed')",
+        );
+      }
+      if (from < 4) {
+        await m.addColumn(alarmConfigs, alarmConfigs.preNotifyMinutes);
+      }
+      if (from < 5) {
+        await m.addColumn(reminders, reminders.color);
       }
     },
     beforeOpen: (details) async {

@@ -1,5 +1,7 @@
+import AudioToolbox
 import Flutter
 import Foundation
+import UIKit
 import UserNotifications
 
 final class AlarmPlugin: NSObject {
@@ -12,6 +14,10 @@ final class AlarmPlugin: NSObject {
 
         let event = FlutterEventChannel(name: "app.ontime/alarm_events", binaryMessenger: messenger)
         event.setStreamHandler(AlarmEventBus.shared)
+
+        // Register both ALARM and REMINDER UNNotificationCategories early
+        // so action buttons appear even if requestPermission hasn't been called yet.
+        NotificationFallback.shared.registerCategory()
     }
 
     // MARK: - MethodChannel handler
@@ -117,6 +123,44 @@ final class AlarmPlugin: NSObject {
             Task {
                 let granted = await AlarmEngine.shared.requestPermission()
                 result(granted)
+            }
+
+        case "notif.checkAuthorized":
+            UNUserNotificationCenter.current().getNotificationSettings { settings in
+                let ok = settings.authorizationStatus == .authorized
+                    || settings.authorizationStatus == .provisional
+                DispatchQueue.main.async { result(ok) }
+            }
+
+        case "notif.openSettings":
+            DispatchQueue.main.async {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            result(nil)
+
+        case "alarm.testRing":
+            // iOS: play system alarm sound + vibrate as preview
+            AudioServicesPlayAlertSound(SystemSoundID(1304))
+            result(nil)
+
+        case "alarm.stopTestRing":
+            // System sounds can't be stopped mid-play; no-op
+            result(nil)
+
+        case "badge.setCount":
+            let count = call.arguments as? Int ?? 0
+            if #available(iOS 16.0, *) {
+                Task {
+                    try? await UNUserNotificationCenter.current().setBadgeCount(count)
+                    result(nil)
+                }
+            } else {
+                DispatchQueue.main.async {
+                    UIApplication.shared.applicationIconBadgeNumber = count
+                    result(nil)
+                }
             }
 
         default:

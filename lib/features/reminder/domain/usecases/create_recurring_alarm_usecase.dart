@@ -18,10 +18,12 @@ class CreateRecurringAlarmUseCase {
   final RuleEngine ruleEngine;
   final RescheduleWindowUseCase rescheduleWindow;
 
-  Future<void> call({
+  Future<String> call({
     required String title,
     required DateTime triggerAt,
     String? userId,
+    String? note,
+    String? color,
     RecurrenceInput recurrence = RecurrenceInput.none,
     String alertLevel = 'ALARM',
     String type = 'alarm',
@@ -51,16 +53,19 @@ class CreateRecurringAlarmUseCase {
       id: reminderId,
       type: type,
       title: title,
+      note: Value(note),
       startAt: triggerAt.millisecondsSinceEpoch,
       createdAt: nowMs,
       updatedAt: nowMs,
       alertLevel: Value(alertLevel),
       recurrenceRuleId: Value(rruleId),
       userId: Value(userId),
+      color: Value(color),
       syncStatus: const Value('pending'),
     ));
 
     // 3. Expand and schedule the first window of occurrences
     await rescheduleWindow.fillForReminder(reminderId);
+    return reminderId;
   }
 }

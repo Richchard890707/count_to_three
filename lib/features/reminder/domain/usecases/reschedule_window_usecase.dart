@@ -15,17 +15,22 @@ class RescheduleWindowUseCase {
     required this.reminderDao,
     required this.occurrenceDao,
     required this.recurrenceRuleDao,
+    required this.alarmConfigDao,
     required this.scheduler,
     required this.ruleEngine,
     required this.notificationScheduler,
+    this.isQuietTime,
   });
 
   final ReminderDao reminderDao;
   final OccurrenceDao occurrenceDao;
   final RecurrenceRuleDao recurrenceRuleDao;
+  final AlarmConfigDao alarmConfigDao;
   final AlarmScheduler scheduler;
   final RuleEngine ruleEngine;
   final NotificationScheduler notificationScheduler;
+  // Returns true if a notification should be suppressed at the given time.
+  final bool Function(DateTime)? isQuietTime;
 
   // Android allows ≤100 exact alarms; iOS AlarmKit ≤50
   int get _windowSize => Platform.isIOS ? 50 : 100;
@@ -37,6 +42,7 @@ class RescheduleWindowUseCase {
     await occurrenceDao.markMissedBefore(now.millisecondsSinceEpoch);
     final reminders = await reminderDao.getAll();
     for (final reminder in reminders) {
+      if (!reminder.isEnabled) continue;
       await _fillWindow(reminder, now);
     }
   }
@@ -46,7 +52,7 @@ class RescheduleWindowUseCase {
   /// scheduled without waiting for the next boot reschedule.
   Future<void> fillForReminder(String reminderId) async {
     final reminder = await reminderDao.findById(reminderId);
-    if (reminder == null) return;
+    if (reminder == null || !reminder.isEnabled) return;
     await _fillWindow(reminder, DateTime.now());
   }
 
@@ -94,6 +100,10 @@ class RescheduleWindowUseCase {
         osScheduled: const Value(true),
       ));
 
+      final config = reminder.alertLevel == 'ALARM'
+          ? await alarmConfigDao.findByReminder(reminder.id)
+          : null;
+
       switch (reminder.alertLevel) {
         case 'ALARM':
           await scheduler.scheduleAlarm(AlarmRequest(
@@ -101,14 +111,35 @@ class RescheduleWindowUseCase {
             reminderId: reminder.id,
             title: reminder.title,
             triggerAt: time,
+            snoozeMinutes: config?.snoozeMinutes ?? 5,
+            maxSnoozeCount: config?.snoozeMaxCount ?? 3,
+            volumeRamp: config?.volumeRamp ?? false,
+            vibrate: config?.vibrate ?? true,
+            ringtoneUri: config?.ringtoneUri,
           ));
+          final preMinutes = config?.preNotifyMinutes;
+          if (preMinutes != null && preMinutes > 0) {
+            final preTime = time.subtract(Duration(minutes: preMinutes));
+            if (preTime.isAfter(DateTime.now()) &&
+                isQuietTime?.call(preTime) != true) {
+              await notificationScheduler.scheduleNotification(NotificationRequest(
+                id: notifId + 1000000,
+                reminderId: reminder.id,
+                title: reminder.title,
+                body: '距離鬧鐘響起還有 $preMinutes 分鐘',
+                triggerAt: preTime,
+              ));
+            }
+          }
         case 'NOTIFICATION':
-          await notificationScheduler.scheduleNotification(NotificationRequest(
-            id: notifId,
-            reminderId: reminder.id,
-            title: reminder.title,
-            triggerAt: time,
-          ));
+          if (isQuietTime?.call(time) != true) {
+            await notificationScheduler.scheduleNotification(NotificationRequest(
+              id: notifId,
+              reminderId: reminder.id,
+              title: reminder.title,
+              triggerAt: time,
+            ));
+          }
         case 'SILENT':
           // Occurrence row recorded; no OS scheduling needed
           break;

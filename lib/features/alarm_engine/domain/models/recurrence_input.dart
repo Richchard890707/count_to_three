@@ -12,6 +12,14 @@ enum RecurrenceFreq {
         monthly => '每月',
         yearly => '每年',
       };
+
+  String get unitLabel => switch (this) {
+        none => '',
+        daily => '天',
+        weekly => '週',
+        monthly => '月',
+        yearly => '年',
+      };
 }
 
 class RecurrenceInput {

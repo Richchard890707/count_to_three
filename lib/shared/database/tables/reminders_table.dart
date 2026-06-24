@@ -27,6 +27,7 @@ class Reminders extends Table {
   IntColumn get version => integer().withDefault(const Constant(1))();
   TextColumn get syncStatus =>
       text().withDefault(const Constant('pending'))();
+  TextColumn get color => text().nullable()(); // hex, e.g. "#43A047"
 
   @override
   Set<Column> get primaryKey => {id};

@@ -7,6 +7,7 @@ class AlarmConfigs extends Table {
   BoolColumn get volumeRamp => boolean().withDefault(const Constant(false))();
   IntColumn get snoozeMinutes => integer().withDefault(const Constant(5))();
   IntColumn get snoozeMaxCount => integer().withDefault(const Constant(3))();
+  IntColumn get preNotifyMinutes => integer().nullable()();
   TextColumn get shiftPatternJson => text().nullable()();
 
   @override

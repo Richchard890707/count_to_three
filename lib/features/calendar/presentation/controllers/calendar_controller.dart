@@ -41,6 +41,7 @@ Future<Map<DateTime, List<CalendarEvent>>> calendarController(
   return GetEventsForRangeUseCase(
     reminderDao: db.reminderDao,
     recurrenceRuleDao: db.recurrenceRuleDao,
+    occurrenceDao: db.occurrenceDao,
     ruleEngine: ref.watch(ruleEngineProvider),
   ).call(range.$1, range.$2);
 }

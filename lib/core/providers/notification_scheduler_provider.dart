@@ -7,3 +7,7 @@ part 'notification_scheduler_provider.g.dart';
 @Riverpod(keepAlive: true)
 NotificationScheduler notificationScheduler(NotificationSchedulerRef ref) =>
     LocalNotificationImpl();
+
+@Riverpod(keepAlive: true)
+Stream<NotificationTapEvent> notificationTapEvents(NotificationTapEventsRef ref) =>
+    ref.watch(notificationSchedulerProvider).tapEvents;

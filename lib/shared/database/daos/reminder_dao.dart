@@ -14,6 +14,39 @@ class ReminderDao extends DatabaseAccessor<AppDatabase>
             ..orderBy([(r) => OrderingTerm.asc(r.startAt)]))
           .watch();
 
+  Stream<List<Reminder>> watchFiltered({
+    String query = '',
+    Set<String> types = const {},
+    bool onlyEnabled = false,
+    String sortColumn = 'startAt',
+    bool sortDesc = false,
+  }) {
+    final mode = sortDesc ? OrderingMode.desc : OrderingMode.asc;
+    return (select(reminders)
+          ..where((r) {
+            var expr = r.isDeleted.equals(false);
+            if (query.isNotEmpty) {
+              final likeQ = '%$query%';
+              expr = expr & (r.title.like(likeQ) | r.note.like(likeQ));
+            }
+            if (types.isNotEmpty) {
+              expr = expr & r.type.isIn(types.toList());
+            }
+            if (onlyEnabled) {
+              expr = expr & r.isEnabled.equals(true);
+            }
+            return expr;
+          })
+          ..orderBy([(r) {
+                Expression sortExpr = r.startAt;
+                if (sortColumn == 'title') sortExpr = r.title;
+                if (sortColumn == 'type') sortExpr = r.type;
+                if (sortColumn == 'createdAt') sortExpr = r.createdAt;
+                return OrderingTerm(expression: sortExpr, mode: mode);
+              }]))
+        .watch();
+  }
+
   Future<List<Reminder>> getAll() =>
       (select(reminders)..where((r) => r.isDeleted.equals(false))).get();
 
@@ -35,6 +68,15 @@ class ReminderDao extends DatabaseAccessor<AppDatabase>
       ),
     );
   }
+
+  Future<void> setEnabled(String id, bool enabled) =>
+      (update(reminders)..where((r) => r.id.equals(id))).write(
+        RemindersCompanion(
+          isEnabled: Value(enabled),
+          syncStatus: const Value('pending'),
+          updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
+        ),
+      );
 
   /// All records with syncStatus='pending', including soft-deleted ones.
   Future<List<Reminder>> getPendingSync() =>

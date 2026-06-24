@@ -22,8 +22,8 @@ object AlarmScheduler {
                 AlarmManager.AlarmClockInfo(alarm.scheduledAt, showIntent),
                 buildReceiverPendingIntent(context, alarm.id),
             )
-        } catch (_: SecurityException) {
-            // Exact alarm permission not granted — fall back to inexact
+        } catch (_: Exception) {
+            // Fall back to inexact if exact alarm is denied (MIUI, API 31+, etc.)
             am.set(
                 AlarmManager.RTC_WAKEUP,
                 alarm.scheduledAt,

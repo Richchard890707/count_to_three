@@ -15,6 +15,9 @@ object AlarmEngine {
         triggerAtMs: Long,
         snoozeMinutes: Int = 5,
         maxSnoozeCount: Int = 3,
+        volumeRamp: Boolean = false,
+        vibrate: Boolean = true,
+        ringtoneUri: String? = null,
     ) {
         val alarm = AlarmData(
             id = alarmId,
@@ -23,6 +26,9 @@ object AlarmEngine {
             scheduledAt = triggerAtMs,
             snoozeMinutes = snoozeMinutes,
             maxSnoozeCount = maxSnoozeCount,
+            volumeRamp = volumeRamp,
+            vibrate = vibrate,
+            ringtoneUri = ringtoneUri,
         )
         AlarmStore.put(context, alarm)
         AlarmScheduler.schedule(context, alarm)
@@ -37,7 +43,7 @@ object AlarmEngine {
         val alarm = AlarmStore.get(alarmId) ?: return
         if (alarm.snoozeCount >= alarm.maxSnoozeCount) {
             cancelAlarm(context, alarmId)
-            AlarmEventBus.emit(com.example.count_to_three.alarm.model.AlarmEvent.Dismissed(alarmId, alarm.reminderId, auto = true))
+            AlarmEventBus.emit(com.example.count_to_three.alarm.model.AlarmEvent.Dismissed(alarmId, alarm.reminderId, alarm.scheduledAt, auto = true))
             return
         }
         val snoozed = alarm.copy(
@@ -46,7 +52,7 @@ object AlarmEngine {
         )
         AlarmStore.put(context, snoozed)
         AlarmScheduler.schedule(context, snoozed)
-        AlarmEventBus.emit(com.example.count_to_three.alarm.model.AlarmEvent.Snoozed(alarmId, alarm.reminderId, snoozed.snoozeCount))
+        AlarmEventBus.emit(com.example.count_to_three.alarm.model.AlarmEvent.Snoozed(alarmId, alarm.reminderId, snoozed.scheduledAt, snoozed.snoozeCount))
     }
 
     fun getPendingAlarms(): List<Map<String, Any>> =

@@ -1,10 +1,12 @@
 package com.example.count_to_three.widget
 
+import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
+import com.example.count_to_three.MainActivity
 import com.example.count_to_three.R
 import java.util.concurrent.TimeUnit
 
@@ -22,7 +24,6 @@ class AlarmWidgetProvider : AppWidgetProvider() {
 
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
-        // home_widget broadcasts UPDATE_WIDGET action to trigger refresh
         if (intent.action == HOME_WIDGET_UPDATE_ACTION) {
             val manager = AppWidgetManager.getInstance(context)
             val ids = manager.getAppWidgetIds(
@@ -40,9 +41,9 @@ class AlarmWidgetProvider : AppWidgetProvider() {
                 "${context.packageName}.home_widget", Context.MODE_PRIVATE
             )
 
-            val time = prefs.getString("nextAlarmTime", null)
+            val time  = prefs.getString("nextAlarmTime", null)
             val title = prefs.getString("nextAlarmTitle", null)
-            val ms = prefs.getLong("nextAlarmMs", -1L)
+            val ms    = prefs.getLong("nextAlarmMs", -1L)
 
             val views = RemoteViews(context.packageName, R.layout.alarm_widget_layout)
 
@@ -56,6 +57,16 @@ class AlarmWidgetProvider : AppWidgetProvider() {
                 views.setTextViewText(R.id.widget_countdown, "")
             }
 
+            // Tap widget → open app
+            val launchIntent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            val pendingIntent = PendingIntent.getActivity(
+                context, 0, launchIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
+
             manager.updateAppWidget(widgetId, views)
         }
 
@@ -66,9 +77,9 @@ class AlarmWidgetProvider : AppWidgetProvider() {
             val h = TimeUnit.MILLISECONDS.toHours(remaining)
             val m = TimeUnit.MILLISECONDS.toMinutes(remaining) % 60
             return when {
-                h > 0 -> "還有 ${h} 小時 ${m} 分"
-                m > 0 -> "還有 ${m} 分鐘"
-                else -> "即將響起"
+                h > 0  -> "還有 ${h} 小時 ${m} 分"
+                m > 0  -> "還有 ${m} 分鐘"
+                else   -> "即將響起"
             }
         }
     }

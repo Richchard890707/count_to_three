@@ -6,7 +6,7 @@ part of 'reschedule_window_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$rescheduleWindowHash() => r'38d475d5d1be9a1c6d902e47eede838cff3a7fed';
+String _$rescheduleWindowHash() => r'32a69529bd5b93b479b13c67483cfde02aa5b9e8';
 
 /// See also [rescheduleWindow].
 @ProviderFor(rescheduleWindow)

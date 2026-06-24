@@ -517,6 +517,15 @@ class $RemindersTable extends Reminders
     requiredDuringInsert: false,
     defaultValue: const Constant('pending'),
   );
+  static const VerificationMeta _colorMeta = const VerificationMeta('color');
+  @override
+  late final GeneratedColumn<String> color = GeneratedColumn<String>(
+    'color',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -536,6 +545,7 @@ class $RemindersTable extends Reminders
     isDeleted,
     version,
     syncStatus,
+    color,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -669,6 +679,12 @@ class $RemindersTable extends Reminders
         syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
       );
     }
+    if (data.containsKey('color')) {
+      context.handle(
+        _colorMeta,
+        color.isAcceptableOrUnknown(data['color']!, _colorMeta),
+      );
+    }
     return context;
   }
 
@@ -746,6 +762,10 @@ class $RemindersTable extends Reminders
         DriftSqlType.string,
         data['${effectivePrefix}sync_status'],
       )!,
+      color: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}color'],
+      ),
     );
   }
 
@@ -773,6 +793,7 @@ class Reminder extends DataClass implements Insertable<Reminder> {
   final bool isDeleted;
   final int version;
   final String syncStatus;
+  final String? color;
   const Reminder({
     required this.id,
     this.userId,
@@ -791,6 +812,7 @@ class Reminder extends DataClass implements Insertable<Reminder> {
     required this.isDeleted,
     required this.version,
     required this.syncStatus,
+    this.color,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -820,6 +842,9 @@ class Reminder extends DataClass implements Insertable<Reminder> {
     map['is_deleted'] = Variable<bool>(isDeleted);
     map['version'] = Variable<int>(version);
     map['sync_status'] = Variable<String>(syncStatus);
+    if (!nullToAbsent || color != null) {
+      map['color'] = Variable<String>(color);
+    }
     return map;
   }
 
@@ -848,6 +873,9 @@ class Reminder extends DataClass implements Insertable<Reminder> {
       isDeleted: Value(isDeleted),
       version: Value(version),
       syncStatus: Value(syncStatus),
+      color: color == null && nullToAbsent
+          ? const Value.absent()
+          : Value(color),
     );
   }
 
@@ -874,6 +902,7 @@ class Reminder extends DataClass implements Insertable<Reminder> {
       isDeleted: serializer.fromJson<bool>(json['isDeleted']),
       version: serializer.fromJson<int>(json['version']),
       syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      color: serializer.fromJson<String?>(json['color']),
     );
   }
   @override
@@ -897,6 +926,7 @@ class Reminder extends DataClass implements Insertable<Reminder> {
       'isDeleted': serializer.toJson<bool>(isDeleted),
       'version': serializer.toJson<int>(version),
       'syncStatus': serializer.toJson<String>(syncStatus),
+      'color': serializer.toJson<String?>(color),
     };
   }
 
@@ -918,6 +948,7 @@ class Reminder extends DataClass implements Insertable<Reminder> {
     bool? isDeleted,
     int? version,
     String? syncStatus,
+    Value<String?> color = const Value.absent(),
   }) => Reminder(
     id: id ?? this.id,
     userId: userId.present ? userId.value : this.userId,
@@ -938,6 +969,7 @@ class Reminder extends DataClass implements Insertable<Reminder> {
     isDeleted: isDeleted ?? this.isDeleted,
     version: version ?? this.version,
     syncStatus: syncStatus ?? this.syncStatus,
+    color: color.present ? color.value : this.color,
   );
   Reminder copyWithCompanion(RemindersCompanion data) {
     return Reminder(
@@ -968,6 +1000,7 @@ class Reminder extends DataClass implements Insertable<Reminder> {
       syncStatus: data.syncStatus.present
           ? data.syncStatus.value
           : this.syncStatus,
+      color: data.color.present ? data.color.value : this.color,
     );
   }
 
@@ -990,7 +1023,8 @@ class Reminder extends DataClass implements Insertable<Reminder> {
           ..write('updatedAt: $updatedAt, ')
           ..write('isDeleted: $isDeleted, ')
           ..write('version: $version, ')
-          ..write('syncStatus: $syncStatus')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('color: $color')
           ..write(')'))
         .toString();
   }
@@ -1014,6 +1048,7 @@ class Reminder extends DataClass implements Insertable<Reminder> {
     isDeleted,
     version,
     syncStatus,
+    color,
   );
   @override
   bool operator ==(Object other) =>
@@ -1035,7 +1070,8 @@ class Reminder extends DataClass implements Insertable<Reminder> {
           other.updatedAt == this.updatedAt &&
           other.isDeleted == this.isDeleted &&
           other.version == this.version &&
-          other.syncStatus == this.syncStatus);
+          other.syncStatus == this.syncStatus &&
+          other.color == this.color);
 }
 
 class RemindersCompanion extends UpdateCompanion<Reminder> {
@@ -1056,6 +1092,7 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
   final Value<bool> isDeleted;
   final Value<int> version;
   final Value<String> syncStatus;
+  final Value<String?> color;
   final Value<int> rowid;
   const RemindersCompanion({
     this.id = const Value.absent(),
@@ -1075,6 +1112,7 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
     this.isDeleted = const Value.absent(),
     this.version = const Value.absent(),
     this.syncStatus = const Value.absent(),
+    this.color = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   RemindersCompanion.insert({
@@ -1095,6 +1133,7 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
     this.isDeleted = const Value.absent(),
     this.version = const Value.absent(),
     this.syncStatus = const Value.absent(),
+    this.color = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        type = Value(type),
@@ -1120,6 +1159,7 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
     Expression<bool>? isDeleted,
     Expression<int>? version,
     Expression<String>? syncStatus,
+    Expression<String>? color,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1140,6 +1180,7 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
       if (isDeleted != null) 'is_deleted': isDeleted,
       if (version != null) 'version': version,
       if (syncStatus != null) 'sync_status': syncStatus,
+      if (color != null) 'color': color,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1162,6 +1203,7 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
     Value<bool>? isDeleted,
     Value<int>? version,
     Value<String>? syncStatus,
+    Value<String?>? color,
     Value<int>? rowid,
   }) {
     return RemindersCompanion(
@@ -1182,6 +1224,7 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
       isDeleted: isDeleted ?? this.isDeleted,
       version: version ?? this.version,
       syncStatus: syncStatus ?? this.syncStatus,
+      color: color ?? this.color,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1240,6 +1283,9 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
     if (syncStatus.present) {
       map['sync_status'] = Variable<String>(syncStatus.value);
     }
+    if (color.present) {
+      map['color'] = Variable<String>(color.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1266,6 +1312,7 @@ class RemindersCompanion extends UpdateCompanion<Reminder> {
           ..write('isDeleted: $isDeleted, ')
           ..write('version: $version, ')
           ..write('syncStatus: $syncStatus, ')
+          ..write('color: $color, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1970,6 +2017,17 @@ class $AlarmConfigsTable extends AlarmConfigs
     requiredDuringInsert: false,
     defaultValue: const Constant(3),
   );
+  static const VerificationMeta _preNotifyMinutesMeta = const VerificationMeta(
+    'preNotifyMinutes',
+  );
+  @override
+  late final GeneratedColumn<int> preNotifyMinutes = GeneratedColumn<int>(
+    'pre_notify_minutes',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _shiftPatternJsonMeta = const VerificationMeta(
     'shiftPatternJson',
   );
@@ -1989,6 +2047,7 @@ class $AlarmConfigsTable extends AlarmConfigs
     volumeRamp,
     snoozeMinutes,
     snoozeMaxCount,
+    preNotifyMinutes,
     shiftPatternJson,
   ];
   @override
@@ -2050,6 +2109,15 @@ class $AlarmConfigsTable extends AlarmConfigs
         ),
       );
     }
+    if (data.containsKey('pre_notify_minutes')) {
+      context.handle(
+        _preNotifyMinutesMeta,
+        preNotifyMinutes.isAcceptableOrUnknown(
+          data['pre_notify_minutes']!,
+          _preNotifyMinutesMeta,
+        ),
+      );
+    }
     if (data.containsKey('shift_pattern_json')) {
       context.handle(
         _shiftPatternJsonMeta,
@@ -2092,6 +2160,10 @@ class $AlarmConfigsTable extends AlarmConfigs
         DriftSqlType.int,
         data['${effectivePrefix}snooze_max_count'],
       )!,
+      preNotifyMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pre_notify_minutes'],
+      ),
       shiftPatternJson: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}shift_pattern_json'],
@@ -2112,6 +2184,7 @@ class AlarmConfig extends DataClass implements Insertable<AlarmConfig> {
   final bool volumeRamp;
   final int snoozeMinutes;
   final int snoozeMaxCount;
+  final int? preNotifyMinutes;
   final String? shiftPatternJson;
   const AlarmConfig({
     required this.reminderId,
@@ -2120,6 +2193,7 @@ class AlarmConfig extends DataClass implements Insertable<AlarmConfig> {
     required this.volumeRamp,
     required this.snoozeMinutes,
     required this.snoozeMaxCount,
+    this.preNotifyMinutes,
     this.shiftPatternJson,
   });
   @override
@@ -2133,6 +2207,9 @@ class AlarmConfig extends DataClass implements Insertable<AlarmConfig> {
     map['volume_ramp'] = Variable<bool>(volumeRamp);
     map['snooze_minutes'] = Variable<int>(snoozeMinutes);
     map['snooze_max_count'] = Variable<int>(snoozeMaxCount);
+    if (!nullToAbsent || preNotifyMinutes != null) {
+      map['pre_notify_minutes'] = Variable<int>(preNotifyMinutes);
+    }
     if (!nullToAbsent || shiftPatternJson != null) {
       map['shift_pattern_json'] = Variable<String>(shiftPatternJson);
     }
@@ -2149,6 +2226,9 @@ class AlarmConfig extends DataClass implements Insertable<AlarmConfig> {
       volumeRamp: Value(volumeRamp),
       snoozeMinutes: Value(snoozeMinutes),
       snoozeMaxCount: Value(snoozeMaxCount),
+      preNotifyMinutes: preNotifyMinutes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(preNotifyMinutes),
       shiftPatternJson: shiftPatternJson == null && nullToAbsent
           ? const Value.absent()
           : Value(shiftPatternJson),
@@ -2167,6 +2247,7 @@ class AlarmConfig extends DataClass implements Insertable<AlarmConfig> {
       volumeRamp: serializer.fromJson<bool>(json['volumeRamp']),
       snoozeMinutes: serializer.fromJson<int>(json['snoozeMinutes']),
       snoozeMaxCount: serializer.fromJson<int>(json['snoozeMaxCount']),
+      preNotifyMinutes: serializer.fromJson<int?>(json['preNotifyMinutes']),
       shiftPatternJson: serializer.fromJson<String?>(json['shiftPatternJson']),
     );
   }
@@ -2180,6 +2261,7 @@ class AlarmConfig extends DataClass implements Insertable<AlarmConfig> {
       'volumeRamp': serializer.toJson<bool>(volumeRamp),
       'snoozeMinutes': serializer.toJson<int>(snoozeMinutes),
       'snoozeMaxCount': serializer.toJson<int>(snoozeMaxCount),
+      'preNotifyMinutes': serializer.toJson<int?>(preNotifyMinutes),
       'shiftPatternJson': serializer.toJson<String?>(shiftPatternJson),
     };
   }
@@ -2191,6 +2273,7 @@ class AlarmConfig extends DataClass implements Insertable<AlarmConfig> {
     bool? volumeRamp,
     int? snoozeMinutes,
     int? snoozeMaxCount,
+    Value<int?> preNotifyMinutes = const Value.absent(),
     Value<String?> shiftPatternJson = const Value.absent(),
   }) => AlarmConfig(
     reminderId: reminderId ?? this.reminderId,
@@ -2199,6 +2282,9 @@ class AlarmConfig extends DataClass implements Insertable<AlarmConfig> {
     volumeRamp: volumeRamp ?? this.volumeRamp,
     snoozeMinutes: snoozeMinutes ?? this.snoozeMinutes,
     snoozeMaxCount: snoozeMaxCount ?? this.snoozeMaxCount,
+    preNotifyMinutes: preNotifyMinutes.present
+        ? preNotifyMinutes.value
+        : this.preNotifyMinutes,
     shiftPatternJson: shiftPatternJson.present
         ? shiftPatternJson.value
         : this.shiftPatternJson,
@@ -2221,6 +2307,9 @@ class AlarmConfig extends DataClass implements Insertable<AlarmConfig> {
       snoozeMaxCount: data.snoozeMaxCount.present
           ? data.snoozeMaxCount.value
           : this.snoozeMaxCount,
+      preNotifyMinutes: data.preNotifyMinutes.present
+          ? data.preNotifyMinutes.value
+          : this.preNotifyMinutes,
       shiftPatternJson: data.shiftPatternJson.present
           ? data.shiftPatternJson.value
           : this.shiftPatternJson,
@@ -2236,6 +2325,7 @@ class AlarmConfig extends DataClass implements Insertable<AlarmConfig> {
           ..write('volumeRamp: $volumeRamp, ')
           ..write('snoozeMinutes: $snoozeMinutes, ')
           ..write('snoozeMaxCount: $snoozeMaxCount, ')
+          ..write('preNotifyMinutes: $preNotifyMinutes, ')
           ..write('shiftPatternJson: $shiftPatternJson')
           ..write(')'))
         .toString();
@@ -2249,6 +2339,7 @@ class AlarmConfig extends DataClass implements Insertable<AlarmConfig> {
     volumeRamp,
     snoozeMinutes,
     snoozeMaxCount,
+    preNotifyMinutes,
     shiftPatternJson,
   );
   @override
@@ -2261,6 +2352,7 @@ class AlarmConfig extends DataClass implements Insertable<AlarmConfig> {
           other.volumeRamp == this.volumeRamp &&
           other.snoozeMinutes == this.snoozeMinutes &&
           other.snoozeMaxCount == this.snoozeMaxCount &&
+          other.preNotifyMinutes == this.preNotifyMinutes &&
           other.shiftPatternJson == this.shiftPatternJson);
 }
 
@@ -2271,6 +2363,7 @@ class AlarmConfigsCompanion extends UpdateCompanion<AlarmConfig> {
   final Value<bool> volumeRamp;
   final Value<int> snoozeMinutes;
   final Value<int> snoozeMaxCount;
+  final Value<int?> preNotifyMinutes;
   final Value<String?> shiftPatternJson;
   final Value<int> rowid;
   const AlarmConfigsCompanion({
@@ -2280,6 +2373,7 @@ class AlarmConfigsCompanion extends UpdateCompanion<AlarmConfig> {
     this.volumeRamp = const Value.absent(),
     this.snoozeMinutes = const Value.absent(),
     this.snoozeMaxCount = const Value.absent(),
+    this.preNotifyMinutes = const Value.absent(),
     this.shiftPatternJson = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -2290,6 +2384,7 @@ class AlarmConfigsCompanion extends UpdateCompanion<AlarmConfig> {
     this.volumeRamp = const Value.absent(),
     this.snoozeMinutes = const Value.absent(),
     this.snoozeMaxCount = const Value.absent(),
+    this.preNotifyMinutes = const Value.absent(),
     this.shiftPatternJson = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : reminderId = Value(reminderId);
@@ -2300,6 +2395,7 @@ class AlarmConfigsCompanion extends UpdateCompanion<AlarmConfig> {
     Expression<bool>? volumeRamp,
     Expression<int>? snoozeMinutes,
     Expression<int>? snoozeMaxCount,
+    Expression<int>? preNotifyMinutes,
     Expression<String>? shiftPatternJson,
     Expression<int>? rowid,
   }) {
@@ -2310,6 +2406,7 @@ class AlarmConfigsCompanion extends UpdateCompanion<AlarmConfig> {
       if (volumeRamp != null) 'volume_ramp': volumeRamp,
       if (snoozeMinutes != null) 'snooze_minutes': snoozeMinutes,
       if (snoozeMaxCount != null) 'snooze_max_count': snoozeMaxCount,
+      if (preNotifyMinutes != null) 'pre_notify_minutes': preNotifyMinutes,
       if (shiftPatternJson != null) 'shift_pattern_json': shiftPatternJson,
       if (rowid != null) 'rowid': rowid,
     });
@@ -2322,6 +2419,7 @@ class AlarmConfigsCompanion extends UpdateCompanion<AlarmConfig> {
     Value<bool>? volumeRamp,
     Value<int>? snoozeMinutes,
     Value<int>? snoozeMaxCount,
+    Value<int?>? preNotifyMinutes,
     Value<String?>? shiftPatternJson,
     Value<int>? rowid,
   }) {
@@ -2332,6 +2430,7 @@ class AlarmConfigsCompanion extends UpdateCompanion<AlarmConfig> {
       volumeRamp: volumeRamp ?? this.volumeRamp,
       snoozeMinutes: snoozeMinutes ?? this.snoozeMinutes,
       snoozeMaxCount: snoozeMaxCount ?? this.snoozeMaxCount,
+      preNotifyMinutes: preNotifyMinutes ?? this.preNotifyMinutes,
       shiftPatternJson: shiftPatternJson ?? this.shiftPatternJson,
       rowid: rowid ?? this.rowid,
     );
@@ -2358,6 +2457,9 @@ class AlarmConfigsCompanion extends UpdateCompanion<AlarmConfig> {
     if (snoozeMaxCount.present) {
       map['snooze_max_count'] = Variable<int>(snoozeMaxCount.value);
     }
+    if (preNotifyMinutes.present) {
+      map['pre_notify_minutes'] = Variable<int>(preNotifyMinutes.value);
+    }
     if (shiftPatternJson.present) {
       map['shift_pattern_json'] = Variable<String>(shiftPatternJson.value);
     }
@@ -2376,6 +2478,7 @@ class AlarmConfigsCompanion extends UpdateCompanion<AlarmConfig> {
           ..write('volumeRamp: $volumeRamp, ')
           ..write('snoozeMinutes: $snoozeMinutes, ')
           ..write('snoozeMaxCount: $snoozeMaxCount, ')
+          ..write('preNotifyMinutes: $preNotifyMinutes, ')
           ..write('shiftPatternJson: $shiftPatternJson, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -2468,6 +2571,37 @@ class $OccurrencesTable extends Occurrences
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2477,6 +2611,9 @@ class $OccurrencesTable extends Occurrences
     snoozeCount,
     firedAt,
     osScheduled,
+    syncStatus,
+    userId,
+    updatedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2544,6 +2681,24 @@ class $OccurrencesTable extends Occurrences
         ),
       );
     }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
     return context;
   }
 
@@ -2581,6 +2736,18 @@ class $OccurrencesTable extends Occurrences
         DriftSqlType.bool,
         data['${effectivePrefix}os_scheduled'],
       )!,
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      ),
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}updated_at'],
+      ),
     );
   }
 
@@ -2598,6 +2765,9 @@ class Occurrence extends DataClass implements Insertable<Occurrence> {
   final int snoozeCount;
   final int? firedAt;
   final bool osScheduled;
+  final String? syncStatus;
+  final String? userId;
+  final int? updatedAt;
   const Occurrence({
     required this.id,
     required this.reminderId,
@@ -2606,6 +2776,9 @@ class Occurrence extends DataClass implements Insertable<Occurrence> {
     required this.snoozeCount,
     this.firedAt,
     required this.osScheduled,
+    this.syncStatus,
+    this.userId,
+    this.updatedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2619,6 +2792,15 @@ class Occurrence extends DataClass implements Insertable<Occurrence> {
       map['fired_at'] = Variable<int>(firedAt);
     }
     map['os_scheduled'] = Variable<bool>(osScheduled);
+    if (!nullToAbsent || syncStatus != null) {
+      map['sync_status'] = Variable<String>(syncStatus);
+    }
+    if (!nullToAbsent || userId != null) {
+      map['user_id'] = Variable<String>(userId);
+    }
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<int>(updatedAt);
+    }
     return map;
   }
 
@@ -2633,6 +2815,15 @@ class Occurrence extends DataClass implements Insertable<Occurrence> {
           ? const Value.absent()
           : Value(firedAt),
       osScheduled: Value(osScheduled),
+      syncStatus: syncStatus == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncStatus),
+      userId: userId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(userId),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
     );
   }
 
@@ -2649,6 +2840,9 @@ class Occurrence extends DataClass implements Insertable<Occurrence> {
       snoozeCount: serializer.fromJson<int>(json['snoozeCount']),
       firedAt: serializer.fromJson<int?>(json['firedAt']),
       osScheduled: serializer.fromJson<bool>(json['osScheduled']),
+      syncStatus: serializer.fromJson<String?>(json['syncStatus']),
+      userId: serializer.fromJson<String?>(json['userId']),
+      updatedAt: serializer.fromJson<int?>(json['updatedAt']),
     );
   }
   @override
@@ -2662,6 +2856,9 @@ class Occurrence extends DataClass implements Insertable<Occurrence> {
       'snoozeCount': serializer.toJson<int>(snoozeCount),
       'firedAt': serializer.toJson<int?>(firedAt),
       'osScheduled': serializer.toJson<bool>(osScheduled),
+      'syncStatus': serializer.toJson<String?>(syncStatus),
+      'userId': serializer.toJson<String?>(userId),
+      'updatedAt': serializer.toJson<int?>(updatedAt),
     };
   }
 
@@ -2673,6 +2870,9 @@ class Occurrence extends DataClass implements Insertable<Occurrence> {
     int? snoozeCount,
     Value<int?> firedAt = const Value.absent(),
     bool? osScheduled,
+    Value<String?> syncStatus = const Value.absent(),
+    Value<String?> userId = const Value.absent(),
+    Value<int?> updatedAt = const Value.absent(),
   }) => Occurrence(
     id: id ?? this.id,
     reminderId: reminderId ?? this.reminderId,
@@ -2681,6 +2881,9 @@ class Occurrence extends DataClass implements Insertable<Occurrence> {
     snoozeCount: snoozeCount ?? this.snoozeCount,
     firedAt: firedAt.present ? firedAt.value : this.firedAt,
     osScheduled: osScheduled ?? this.osScheduled,
+    syncStatus: syncStatus.present ? syncStatus.value : this.syncStatus,
+    userId: userId.present ? userId.value : this.userId,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
   );
   Occurrence copyWithCompanion(OccurrencesCompanion data) {
     return Occurrence(
@@ -2699,6 +2902,11 @@ class Occurrence extends DataClass implements Insertable<Occurrence> {
       osScheduled: data.osScheduled.present
           ? data.osScheduled.value
           : this.osScheduled,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
   }
 
@@ -2711,7 +2919,10 @@ class Occurrence extends DataClass implements Insertable<Occurrence> {
           ..write('state: $state, ')
           ..write('snoozeCount: $snoozeCount, ')
           ..write('firedAt: $firedAt, ')
-          ..write('osScheduled: $osScheduled')
+          ..write('osScheduled: $osScheduled, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('userId: $userId, ')
+          ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
@@ -2725,6 +2936,9 @@ class Occurrence extends DataClass implements Insertable<Occurrence> {
     snoozeCount,
     firedAt,
     osScheduled,
+    syncStatus,
+    userId,
+    updatedAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -2736,7 +2950,10 @@ class Occurrence extends DataClass implements Insertable<Occurrence> {
           other.state == this.state &&
           other.snoozeCount == this.snoozeCount &&
           other.firedAt == this.firedAt &&
-          other.osScheduled == this.osScheduled);
+          other.osScheduled == this.osScheduled &&
+          other.syncStatus == this.syncStatus &&
+          other.userId == this.userId &&
+          other.updatedAt == this.updatedAt);
 }
 
 class OccurrencesCompanion extends UpdateCompanion<Occurrence> {
@@ -2747,6 +2964,9 @@ class OccurrencesCompanion extends UpdateCompanion<Occurrence> {
   final Value<int> snoozeCount;
   final Value<int?> firedAt;
   final Value<bool> osScheduled;
+  final Value<String?> syncStatus;
+  final Value<String?> userId;
+  final Value<int?> updatedAt;
   final Value<int> rowid;
   const OccurrencesCompanion({
     this.id = const Value.absent(),
@@ -2756,6 +2976,9 @@ class OccurrencesCompanion extends UpdateCompanion<Occurrence> {
     this.snoozeCount = const Value.absent(),
     this.firedAt = const Value.absent(),
     this.osScheduled = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   OccurrencesCompanion.insert({
@@ -2766,6 +2989,9 @@ class OccurrencesCompanion extends UpdateCompanion<Occurrence> {
     this.snoozeCount = const Value.absent(),
     this.firedAt = const Value.absent(),
     this.osScheduled = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        reminderId = Value(reminderId),
@@ -2778,6 +3004,9 @@ class OccurrencesCompanion extends UpdateCompanion<Occurrence> {
     Expression<int>? snoozeCount,
     Expression<int>? firedAt,
     Expression<bool>? osScheduled,
+    Expression<String>? syncStatus,
+    Expression<String>? userId,
+    Expression<int>? updatedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2788,6 +3017,9 @@ class OccurrencesCompanion extends UpdateCompanion<Occurrence> {
       if (snoozeCount != null) 'snooze_count': snoozeCount,
       if (firedAt != null) 'fired_at': firedAt,
       if (osScheduled != null) 'os_scheduled': osScheduled,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (userId != null) 'user_id': userId,
+      if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2800,6 +3032,9 @@ class OccurrencesCompanion extends UpdateCompanion<Occurrence> {
     Value<int>? snoozeCount,
     Value<int?>? firedAt,
     Value<bool>? osScheduled,
+    Value<String?>? syncStatus,
+    Value<String?>? userId,
+    Value<int?>? updatedAt,
     Value<int>? rowid,
   }) {
     return OccurrencesCompanion(
@@ -2810,6 +3045,9 @@ class OccurrencesCompanion extends UpdateCompanion<Occurrence> {
       snoozeCount: snoozeCount ?? this.snoozeCount,
       firedAt: firedAt ?? this.firedAt,
       osScheduled: osScheduled ?? this.osScheduled,
+      syncStatus: syncStatus ?? this.syncStatus,
+      userId: userId ?? this.userId,
+      updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2838,6 +3076,15 @@ class OccurrencesCompanion extends UpdateCompanion<Occurrence> {
     if (osScheduled.present) {
       map['os_scheduled'] = Variable<bool>(osScheduled.value);
     }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<int>(updatedAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2854,6 +3101,9 @@ class OccurrencesCompanion extends UpdateCompanion<Occurrence> {
           ..write('snoozeCount: $snoozeCount, ')
           ..write('firedAt: $firedAt, ')
           ..write('osScheduled: $osScheduled, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('userId: $userId, ')
+          ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2873,6 +3123,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final ReminderDao reminderDao = ReminderDao(this as AppDatabase);
   late final OccurrenceDao occurrenceDao = OccurrenceDao(this as AppDatabase);
   late final RecurrenceRuleDao recurrenceRuleDao = RecurrenceRuleDao(
+    this as AppDatabase,
+  );
+  late final AlarmConfigDao alarmConfigDao = AlarmConfigDao(
     this as AppDatabase,
   );
   @override
@@ -3083,6 +3336,7 @@ typedef $$RemindersTableCreateCompanionBuilder =
       Value<bool> isDeleted,
       Value<int> version,
       Value<String> syncStatus,
+      Value<String?> color,
       Value<int> rowid,
     });
 typedef $$RemindersTableUpdateCompanionBuilder =
@@ -3104,6 +3358,7 @@ typedef $$RemindersTableUpdateCompanionBuilder =
       Value<bool> isDeleted,
       Value<int> version,
       Value<String> syncStatus,
+      Value<String?> color,
       Value<int> rowid,
     });
 
@@ -3198,6 +3453,11 @@ class $$RemindersTableFilterComposer
 
   ColumnFilters<String> get syncStatus => $composableBuilder(
     column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get color => $composableBuilder(
+    column: $table.color,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -3295,6 +3555,11 @@ class $$RemindersTableOrderingComposer
     column: $table.syncStatus,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$RemindersTableAnnotationComposer
@@ -3366,6 +3631,9 @@ class $$RemindersTableAnnotationComposer
     column: $table.syncStatus,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get color =>
+      $composableBuilder(column: $table.color, builder: (column) => column);
 }
 
 class $$RemindersTableTableManager
@@ -3413,6 +3681,7 @@ class $$RemindersTableTableManager
                 Value<bool> isDeleted = const Value.absent(),
                 Value<int> version = const Value.absent(),
                 Value<String> syncStatus = const Value.absent(),
+                Value<String?> color = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RemindersCompanion(
                 id: id,
@@ -3432,6 +3701,7 @@ class $$RemindersTableTableManager
                 isDeleted: isDeleted,
                 version: version,
                 syncStatus: syncStatus,
+                color: color,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -3453,6 +3723,7 @@ class $$RemindersTableTableManager
                 Value<bool> isDeleted = const Value.absent(),
                 Value<int> version = const Value.absent(),
                 Value<String> syncStatus = const Value.absent(),
+                Value<String?> color = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RemindersCompanion.insert(
                 id: id,
@@ -3472,6 +3743,7 @@ class $$RemindersTableTableManager
                 isDeleted: isDeleted,
                 version: version,
                 syncStatus: syncStatus,
+                color: color,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -3811,6 +4083,7 @@ typedef $$AlarmConfigsTableCreateCompanionBuilder =
       Value<bool> volumeRamp,
       Value<int> snoozeMinutes,
       Value<int> snoozeMaxCount,
+      Value<int?> preNotifyMinutes,
       Value<String?> shiftPatternJson,
       Value<int> rowid,
     });
@@ -3822,6 +4095,7 @@ typedef $$AlarmConfigsTableUpdateCompanionBuilder =
       Value<bool> volumeRamp,
       Value<int> snoozeMinutes,
       Value<int> snoozeMaxCount,
+      Value<int?> preNotifyMinutes,
       Value<String?> shiftPatternJson,
       Value<int> rowid,
     });
@@ -3862,6 +4136,11 @@ class $$AlarmConfigsTableFilterComposer
 
   ColumnFilters<int> get snoozeMaxCount => $composableBuilder(
     column: $table.snoozeMaxCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get preNotifyMinutes => $composableBuilder(
+    column: $table.preNotifyMinutes,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3910,6 +4189,11 @@ class $$AlarmConfigsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get preNotifyMinutes => $composableBuilder(
+    column: $table.preNotifyMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get shiftPatternJson => $composableBuilder(
     column: $table.shiftPatternJson,
     builder: (column) => ColumnOrderings(column),
@@ -3950,6 +4234,11 @@ class $$AlarmConfigsTableAnnotationComposer
 
   GeneratedColumn<int> get snoozeMaxCount => $composableBuilder(
     column: $table.snoozeMaxCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get preNotifyMinutes => $composableBuilder(
+    column: $table.preNotifyMinutes,
     builder: (column) => column,
   );
 
@@ -3996,6 +4285,7 @@ class $$AlarmConfigsTableTableManager
                 Value<bool> volumeRamp = const Value.absent(),
                 Value<int> snoozeMinutes = const Value.absent(),
                 Value<int> snoozeMaxCount = const Value.absent(),
+                Value<int?> preNotifyMinutes = const Value.absent(),
                 Value<String?> shiftPatternJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AlarmConfigsCompanion(
@@ -4005,6 +4295,7 @@ class $$AlarmConfigsTableTableManager
                 volumeRamp: volumeRamp,
                 snoozeMinutes: snoozeMinutes,
                 snoozeMaxCount: snoozeMaxCount,
+                preNotifyMinutes: preNotifyMinutes,
                 shiftPatternJson: shiftPatternJson,
                 rowid: rowid,
               ),
@@ -4016,6 +4307,7 @@ class $$AlarmConfigsTableTableManager
                 Value<bool> volumeRamp = const Value.absent(),
                 Value<int> snoozeMinutes = const Value.absent(),
                 Value<int> snoozeMaxCount = const Value.absent(),
+                Value<int?> preNotifyMinutes = const Value.absent(),
                 Value<String?> shiftPatternJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AlarmConfigsCompanion.insert(
@@ -4025,6 +4317,7 @@ class $$AlarmConfigsTableTableManager
                 volumeRamp: volumeRamp,
                 snoozeMinutes: snoozeMinutes,
                 snoozeMaxCount: snoozeMaxCount,
+                preNotifyMinutes: preNotifyMinutes,
                 shiftPatternJson: shiftPatternJson,
                 rowid: rowid,
               ),
@@ -4062,6 +4355,9 @@ typedef $$OccurrencesTableCreateCompanionBuilder =
       Value<int> snoozeCount,
       Value<int?> firedAt,
       Value<bool> osScheduled,
+      Value<String?> syncStatus,
+      Value<String?> userId,
+      Value<int?> updatedAt,
       Value<int> rowid,
     });
 typedef $$OccurrencesTableUpdateCompanionBuilder =
@@ -4073,6 +4369,9 @@ typedef $$OccurrencesTableUpdateCompanionBuilder =
       Value<int> snoozeCount,
       Value<int?> firedAt,
       Value<bool> osScheduled,
+      Value<String?> syncStatus,
+      Value<String?> userId,
+      Value<int?> updatedAt,
       Value<int> rowid,
     });
 
@@ -4117,6 +4416,21 @@ class $$OccurrencesTableFilterComposer
 
   ColumnFilters<bool> get osScheduled => $composableBuilder(
     column: $table.osScheduled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -4164,6 +4478,21 @@ class $$OccurrencesTableOrderingComposer
     column: $table.osScheduled,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$OccurrencesTableAnnotationComposer
@@ -4203,6 +4532,17 @@ class $$OccurrencesTableAnnotationComposer
     column: $table.osScheduled,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<int> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 }
 
 class $$OccurrencesTableTableManager
@@ -4243,6 +4583,9 @@ class $$OccurrencesTableTableManager
                 Value<int> snoozeCount = const Value.absent(),
                 Value<int?> firedAt = const Value.absent(),
                 Value<bool> osScheduled = const Value.absent(),
+                Value<String?> syncStatus = const Value.absent(),
+                Value<String?> userId = const Value.absent(),
+                Value<int?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => OccurrencesCompanion(
                 id: id,
@@ -4252,6 +4595,9 @@ class $$OccurrencesTableTableManager
                 snoozeCount: snoozeCount,
                 firedAt: firedAt,
                 osScheduled: osScheduled,
+                syncStatus: syncStatus,
+                userId: userId,
+                updatedAt: updatedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -4263,6 +4609,9 @@ class $$OccurrencesTableTableManager
                 Value<int> snoozeCount = const Value.absent(),
                 Value<int?> firedAt = const Value.absent(),
                 Value<bool> osScheduled = const Value.absent(),
+                Value<String?> syncStatus = const Value.absent(),
+                Value<String?> userId = const Value.absent(),
+                Value<int?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => OccurrencesCompanion.insert(
                 id: id,
@@ -4272,6 +4621,9 @@ class $$OccurrencesTableTableManager
                 snoozeCount: snoozeCount,
                 firedAt: firedAt,
                 osScheduled: osScheduled,
+                syncStatus: syncStatus,
+                userId: userId,
+                updatedAt: updatedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

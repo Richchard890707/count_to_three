@@ -45,6 +45,7 @@
             android:name=".alarm.AlarmActivity"
             android:exported="false"
             android:launchMode="singleInstance"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:showOnLockScreen="true"
             android:turnScreenOn="true"
             android:excludeFromRecents="true"
