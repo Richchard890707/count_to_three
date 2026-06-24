@@ -113,6 +113,18 @@ class _AppState extends ConsumerState<App> {
                 event.type == AlarmEventType.dismissed)) {
           _markOccurrenceCompleted(event.reminderId, scheduledAtMs);
         }
+        // Close the Flutter ring screen if the alarm was already handled externally
+        // (e.g., via AlarmActivity on Android or AlarmKit system UI on iOS).
+        // Use addPostFrameCallback so any in-flight push('/alarm/ring') from the
+        // paired Fired event has time to complete before we navigate away.
+        if (event.type == AlarmEventType.dismissed ||
+            event.type == AlarmEventType.snoozed) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final path =
+                _router.routerDelegate.currentConfiguration.uri.path;
+            if (path == '/alarm/ring') _router.go('/alarms');
+          });
+        }
       });
     });
 
