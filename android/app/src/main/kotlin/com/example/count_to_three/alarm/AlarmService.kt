@@ -89,6 +89,16 @@ class AlarmService : Service() {
         if (alarmId == -1) { stopSelf(); return }
         AlarmStore.init(this)
         val alarm = AlarmStore.get(alarmId) ?: run { stopSelf(); return }
+
+        // If another alarm is already ringing, dismiss it first so we don't
+        // end up with two simultaneous MediaPlayers and orphaned runnables.
+        if (currentAlarmId != -1) {
+            AlarmStore.get(currentAlarmId)?.let {
+                AlarmEventBus.emit(AlarmEvent.Dismissed(currentAlarmId, it.reminderId, it.scheduledAt, auto = true))
+                AlarmStore.remove(this, currentAlarmId)
+            }
+            stopRingOnly()
+        }
         currentAlarmId = alarmId
 
         acquireWakeLock()
@@ -239,7 +249,9 @@ class AlarmService : Service() {
         }
     }
 
-    private fun teardown() {
+    // Releases audio/vibration/runnables/wakelock without stopping the service.
+    // Used when a second alarm fires while one is already ringing.
+    private fun stopRingOnly() {
         volumeRampRunnable?.let { handler.removeCallbacks(it) }
         volumeRampRunnable = null
         autoStopRunnable?.let { handler.removeCallbacks(it) }
@@ -252,6 +264,11 @@ class AlarmService : Service() {
         vibrator = null
         wakeLock?.runCatching { if (isHeld) release() }
         wakeLock = null
+    }
+
+    private fun teardown() {
+        stopRingOnly()
+        currentAlarmId = -1
         @Suppress("DEPRECATION")
         stopForeground(true)
         stopSelf()

@@ -59,10 +59,9 @@ final class AlarmEngine {
         if #available(iOS 26.1, *) { try? AlarmKitScheduler.shared.cancel(alarmId: alarmId) }
         NotificationFallback.shared.cancel(alarmId: alarmId)
 
-        // Reschedule
+        // Reschedule — schedule(alarm:) calls AlarmStore.shared.put internally.
         alarm.snoozeCount += 1
         alarm.scheduledAt = Int(Date().timeIntervalSince1970 * 1000) + alarm.snoozeMinutes * 60_000
-        AlarmStore.shared.put(alarm)
 
         try await schedule(alarm: alarm)
 

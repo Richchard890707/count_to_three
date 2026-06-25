@@ -18,7 +18,7 @@ class CalendarScreen extends ConsumerWidget {
         ref.watch(calendarControllerProvider).valueOrNull ?? const {};
 
     List<CalendarEvent> eventLoader(DateTime day) {
-      final key = DateTime(day.year, day.month, day.day);
+      final key = DateTime.utc(day.year, day.month, day.day);
       return eventsMap[key] ?? const [];
     }
 

@@ -54,7 +54,8 @@ class GetEventsForRangeUseCase {
 
       for (final t in times) {
         final occId = '${reminder.id}_${t.millisecondsSinceEpoch}';
-        final key = DateTime(t.year, t.month, t.day);
+        // Use UTC midnight so the key matches what table_calendar passes to eventLoader.
+        final key = DateTime.utc(t.year, t.month, t.day);
         (result[key] ??= []).add(CalendarEvent(
           reminder: reminder,
           occurrenceTime: t,

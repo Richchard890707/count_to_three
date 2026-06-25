@@ -479,7 +479,7 @@ class _TodayListSection extends ConsumerWidget {
         final now = DateTime.now();
         final todayStart = DateTime(now.year, now.month, now.day).millisecondsSinceEpoch;
         final count = await ref.read(appDatabaseProvider).occurrenceDao
-            .countByStateInRange('pending', todayStart, todayStart + 86400000);
+            .countByStateInRange('pending', todayStart, todayStart + 86400000 - 1);
         await _alarmChannel.invokeMethod('badge.setCount', count);
       } catch (_) {}
     }

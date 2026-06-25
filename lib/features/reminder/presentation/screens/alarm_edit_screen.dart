@@ -565,14 +565,14 @@ class _AlarmEditScreenState extends ConsumerState<AlarmEditScreen> {
               children: [
                 ChoiceChip(
                   label: const Text('不設定'),
-                  selected: _untilDate == null,
-                  onSelected: (_) => setState(() => _untilDate = null),
+                  selected: _untilDate == null && _repeatCount == null,
+                  onSelected: (_) => setState(() { _untilDate = null; _repeatCount = null; }),
                 ),
                 if (_untilDate != null)
                   Chip(
                     avatar: const Icon(Icons.event_outlined, size: 16),
                     label: Text('${_untilDate!.month}月${_untilDate!.day}日'),
-                    onDeleted: () => setState(() => _untilDate = null),
+                    onDeleted: () => setState(() { _untilDate = null; _repeatCount = null; }),
                   ),
                 ActionChip(
                   avatar: const Icon(Icons.calendar_month_outlined, size: 16),

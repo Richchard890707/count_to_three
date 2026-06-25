@@ -189,6 +189,7 @@ class FirestoreSyncService implements SyncService {
 
   Map<String, dynamic> _toMap(Reminder r) => {
         'id': r.id,
+        'userId': r.userId,
         'type': r.type,
         'title': r.title,
         'note': r.note,
@@ -209,6 +210,7 @@ class FirestoreSyncService implements SyncService {
   RemindersCompanion _fromMap(String id, Map<String, dynamic> d) =>
       RemindersCompanion(
         id: Value(id),
+        userId: Value(d['userId'] as String?),
         type: Value(d['type'] as String? ?? 'alarm'),
         title: Value(d['title'] as String? ?? ''),
         note: Value(d['note'] as String?),

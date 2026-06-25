@@ -165,25 +165,8 @@ final class NotificationFallback {
             }
 
         case snoozeActionId:
-            guard var alarm = AlarmStore.shared.get(alarmId) else { return }
-            let originalScheduledAt = alarm.scheduledAt
-            if alarm.snoozeCount >= alarm.maxSnoozeCount {
-                emitDismissed(alarmId: alarmId, reminderId: reminderId, scheduledAtMs: originalScheduledAt, auto: true)
-                AlarmStore.shared.remove(alarmId)
-            } else {
-                alarm.scheduledAt = Int(Date().timeIntervalSince1970 * 1000)
-                    + alarm.snoozeMinutes * 60_000
-                alarm.snoozeCount += 1
-                AlarmStore.shared.put(alarm)
-                schedule(alarm)
-                AlarmEventBus.shared.emit([
-                    "type": "snoozed",
-                    "alarmId": alarmId,
-                    "reminderId": reminderId,
-                    "scheduledAtMs": originalScheduledAt,
-                    "snoozeCount": alarm.snoozeCount,
-                ])
-            }
+            let capturedAlarmId = alarmId
+            Task { try? await AlarmEngine.shared.snooze(alarmId: capturedAlarmId) }
 
         case UNNotificationDismissActionIdentifier:
             let dismissScheduledAtMs = AlarmStore.shared.get(alarmId)?.scheduledAt ?? 0

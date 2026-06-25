@@ -30,6 +30,7 @@ class ExportDataUseCase {
         'type': r.type,
         'alertLevel': r.alertLevel,
         'startAt': r.startAt,
+        'timezone': r.timezone,
         'isEnabled': r.isEnabled,
         'isDeleted': r.isDeleted,
         'createdAt': r.createdAt,

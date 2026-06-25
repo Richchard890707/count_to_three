@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:count_to_three/core/providers/database_provider.dart';
 import 'package:count_to_three/core/providers/reschedule_window_provider.dart';
+import 'package:count_to_three/core/providers/sync_provider.dart';
 import 'package:count_to_three/features/calendar/domain/models/calendar_event.dart';
 import 'package:count_to_three/features/calendar/presentation/controllers/calendar_controller.dart';
 import 'package:count_to_three/shared/database/app_database.dart';
@@ -99,6 +100,7 @@ class DayEventList extends ConsumerWidget {
     } else {
       await db.occurrenceDao.updateState(occurrenceId, 'completed');
     }
+    await ref.read(syncServiceProvider).pushPending();
     await ref.read(rescheduleWindowProvider).fillForReminder(e.reminder.id);
     // Force calendar to reload so the state icon updates.
     ref.invalidate(calendarControllerProvider);
@@ -109,7 +111,7 @@ class DayEventList extends ConsumerWidget {
         final todayStart =
             DateTime(now.year, now.month, now.day).millisecondsSinceEpoch;
         final count = await db.occurrenceDao
-            .countByStateInRange('pending', todayStart, todayStart + 86400000);
+            .countByStateInRange('pending', todayStart, todayStart + 86400000 - 1);
         await const MethodChannel('app.ontime/alarm')
             .invokeMethod('badge.setCount', count);
       } catch (_) {}

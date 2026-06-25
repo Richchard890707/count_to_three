@@ -5,6 +5,7 @@ import 'package:count_to_three/core/providers/auth_provider.dart';
 import 'package:count_to_three/core/providers/connectivity_provider.dart';
 import 'package:count_to_three/core/providers/database_provider.dart';
 import 'package:count_to_three/core/providers/notification_scheduler_provider.dart';
+import 'package:count_to_three/core/providers/quiet_hours_provider.dart';
 import 'package:count_to_three/core/providers/reschedule_window_provider.dart';
 import 'package:count_to_three/core/providers/sync_provider.dart';
 import 'package:count_to_three/core/providers/theme_provider.dart';
@@ -141,6 +142,13 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       });
     });
 
+    // Quiet hours listener: reschedule window whenever quiet hours change so
+    // newly-suppressed or newly-enabled notification slots are updated.
+    ref.listenManual(quietHoursNotifierProvider, (prev, next) {
+      if (prev?.valueOrNull == next.valueOrNull) return;
+      next.whenData((_) => ref.read(rescheduleWindowProvider).call());
+    });
+
     // Connectivity listener: push pending records when network is restored.
     ref.listenManual(connectivityProvider, (prev, next) {
       next.whenData((results) {
@@ -163,13 +171,16 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       // Re-use notification id based on original scheduled time.
       const kNotifBucket = 700_000_000;
       final notifId = (scheduledAtMs ~/ 1000 % kNotifBucket) + kNotifBucket * 2;
-      scheduler.scheduleNotification(NotificationRequest(
-        id: notifId,
-        reminderId: reminderId,
-        title: reminder.title,
-        body: '延後提醒',
-        triggerAt: snoozeAt,
-      ));
+      // Cancel any existing snooze notification with this id before rescheduling.
+      scheduler.cancelNotification(notifId).then((_) {
+        scheduler.scheduleNotification(NotificationRequest(
+          id: notifId,
+          reminderId: reminderId,
+          title: reminder.title,
+          body: '延後提醒',
+          triggerAt: snoozeAt,
+        ));
+      });
     });
     _messengerKey.currentState?.showSnackBar(
       const SnackBar(
@@ -183,7 +194,9 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     final db = ref.read(appDatabaseProvider);
     db.occurrenceDao.findById('${reminderId}_$scheduledAtMs').then((occ) {
       if (occ == null || occ.state == 'completed') return;
-      db.occurrenceDao.updateState('${reminderId}_$scheduledAtMs', 'completed');
+      db.occurrenceDao
+          .updateState('${reminderId}_$scheduledAtMs', 'completed')
+          .then((_) => ref.read(syncServiceProvider).pushPending());
       _messengerKey.currentState?.showSnackBar(
         const SnackBar(
           content: Text('已記錄完成'),
@@ -216,11 +229,11 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       final now = DateTime.now();
       final todayStart = DateTime(now.year, now.month, now.day)
           .millisecondsSinceEpoch;
-      final tomorrowStart = todayStart + 86400000;
+      final todayEnd = todayStart + 86400000 - 1;
       final count = await ref
           .read(appDatabaseProvider)
           .occurrenceDao
-          .countByStateInRange('pending', todayStart, tomorrowStart);
+          .countByStateInRange('pending', todayStart, todayEnd);
       await _alarmChannel.invokeMethod('badge.setCount', count);
     } catch (_) {}
   }

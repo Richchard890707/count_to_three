@@ -13,4 +13,7 @@ class RecurrenceRuleDao extends DatabaseAccessor<AppDatabase>
 
   Future<RecurrenceRule?> findById(String id) =>
       (select(recurrenceRules)..where((r) => r.id.equals(id))).getSingleOrNull();
+
+  Future<void> deleteById(String id) =>
+      (delete(recurrenceRules)..where((r) => r.id.equals(id))).go();
 }

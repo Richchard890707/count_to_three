@@ -21,14 +21,6 @@ import UserNotifications
 
     // MARK: - App lifecycle
 
-    // Reconcile AlarmKit state each time the app comes to foreground.
-    // Alarms stopped/snoozed via the system lock-screen UI won't call back into Flutter;
-    // instead we diff AlarmKit's live list against our AlarmStore and emit events.
-    override func applicationDidBecomeActive(_ application: UIApplication) {
-        super.applicationDidBecomeActive(application)
-        Task { await AlarmEngine.shared.detectHandledAlarms() }
-    }
-
     // MARK: - UNUserNotificationCenterDelegate (iOS ≤25 fallback)
 
     // Handle stop / snooze action taps

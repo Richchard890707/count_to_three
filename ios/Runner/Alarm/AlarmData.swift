@@ -8,6 +8,9 @@ struct AlarmData: Codable {
     var snoozeCount: Int
     let snoozeMinutes: Int
     let maxSnoozeCount: Int
+    let volumeRamp: Bool
+    let vibrate: Bool
+    let ringtoneUri: String?
 
     var triggerDate: Date {
         Date(timeIntervalSince1970: Double(scheduledAt) / 1000.0)

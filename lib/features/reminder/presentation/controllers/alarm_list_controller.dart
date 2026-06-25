@@ -326,6 +326,10 @@ class AlarmListController extends _$AlarmListController {
     String? ruleId = existing?.recurrenceRuleId;
 
     if (freq == RecurrenceFreq.none) {
+      // Delete orphaned rule when switching from recurring to non-recurring.
+      if (existing?.recurrenceRuleId != null) {
+        await db.recurrenceRuleDao.deleteById(existing!.recurrenceRuleId!);
+      }
       ruleId = null;
     } else {
       final effectiveWeekday = (freq == RecurrenceFreq.weekly && byWeekday?.isNotEmpty == true)
@@ -471,13 +475,27 @@ class AlarmListController extends _$AlarmListController {
       orElse: () => ReminderType.alarm,
     );
 
+    // If the original start time is in the past, advance to the same time
+    // tomorrow so the duplicate immediately schedules a valid next occurrence.
+    final originalStart = DateTime.fromMillisecondsSinceEpoch(original.startAt);
+    final now = DateTime.now();
+    DateTime triggerAt;
+    if (originalStart.isBefore(now)) {
+      triggerAt = DateTime(
+        now.year, now.month, now.day + 1,
+        originalStart.hour, originalStart.minute,
+      );
+    } else {
+      triggerAt = originalStart;
+    }
+
     return createReminder(
       type,
       alertLevel,
       freq,
       title: '${original.title} (複製)',
       note: original.note,
-      triggerAt: DateTime.fromMillisecondsSinceEpoch(original.startAt),
+      triggerAt: triggerAt,
       byWeekday: byWeekday,
       snoozeMinutes: config?.snoozeMinutes ?? 5,
       maxSnoozeCount: config?.snoozeMaxCount ?? 3,

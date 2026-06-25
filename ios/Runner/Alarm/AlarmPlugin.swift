@@ -46,7 +46,10 @@ final class AlarmPlugin: NSObject {
                 scheduledAt: triggerAtMs,
                 snoozeCount: 0,
                 snoozeMinutes: args["snoozeMinutes"]  as? Int ?? 5,
-                maxSnoozeCount: args["maxSnoozeCount"] as? Int ?? 3
+                maxSnoozeCount: args["maxSnoozeCount"] as? Int ?? 3,
+                volumeRamp: args["volumeRamp"]  as? Bool ?? false,
+                vibrate:    args["vibrate"]     as? Bool ?? true,
+                ringtoneUri: args["ringtoneUri"] as? String
             )
             Task {
                 await AlarmEngine.shared.requestPermission()

@@ -73,6 +73,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         alarmConfigDao: db.alarmConfigDao,
       ).call(jsonString);
 
+      // Delete stale pending occurrences for updated reminders so that
+      // rescheduleWindow starts fresh from the new startAt / recurrence rule.
+      for (final id in importResult.updatedIds) {
+        await db.occurrenceDao.deleteAllPendingByReminder(id);
+      }
+
       // Reschedule all alarms for newly imported reminders
       await ref.read(rescheduleWindowProvider).call();
 

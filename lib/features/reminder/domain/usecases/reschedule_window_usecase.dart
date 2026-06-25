@@ -103,56 +103,73 @@ class RescheduleWindowUseCase {
       const kNotifBucket = 700_000_000;
       final notifId = scheduledMs ~/ 1000 % kNotifBucket;
 
+      // Insert with osScheduled=false first; update to true only after the OS
+      // call succeeds. On failure, delete the row so the window stays consistent.
       await occurrenceDao.upsert(OccurrencesCompanion(
         id: Value(occurrenceId),
         reminderId: Value(reminder.id),
         scheduledAt: Value(scheduledMs),
-        osScheduled: const Value(true),
+        osScheduled: const Value(false),
       ));
 
       final config = reminder.alertLevel == 'ALARM'
           ? await alarmConfigDao.findByReminder(reminder.id)
           : null;
 
-      switch (reminder.alertLevel) {
-        case 'ALARM':
-          await scheduler.scheduleAlarm(AlarmRequest(
-            alarmId: notifId,
-            reminderId: reminder.id,
-            title: reminder.title,
-            triggerAt: time,
-            snoozeMinutes: config?.snoozeMinutes ?? 5,
-            maxSnoozeCount: config?.snoozeMaxCount ?? 3,
-            volumeRamp: config?.volumeRamp ?? false,
-            vibrate: config?.vibrate ?? true,
-            ringtoneUri: config?.ringtoneUri,
-          ));
-          final preMinutes = config?.preNotifyMinutes;
-          if (preMinutes != null && preMinutes > 0) {
-            final preTime = time.subtract(Duration(minutes: preMinutes));
-            if (preTime.isAfter(DateTime.now()) &&
-                isQuietTime?.call(preTime) != true) {
-              await notificationScheduler.scheduleNotification(NotificationRequest(
-                id: notifId + kNotifBucket,
-                reminderId: reminder.id,
-                title: reminder.title,
-                body: '距離鬧鐘響起還有 $preMinutes 分鐘',
-                triggerAt: preTime,
-              ));
-            }
-          }
-        case 'NOTIFICATION':
-          if (isQuietTime?.call(time) != true) {
-            await notificationScheduler.scheduleNotification(NotificationRequest(
-              id: notifId,
+      bool osOk = false;
+      try {
+        switch (reminder.alertLevel) {
+          case 'ALARM':
+            await scheduler.scheduleAlarm(AlarmRequest(
+              alarmId: notifId,
               reminderId: reminder.id,
               title: reminder.title,
               triggerAt: time,
+              snoozeMinutes: config?.snoozeMinutes ?? 5,
+              maxSnoozeCount: config?.snoozeMaxCount ?? 3,
+              volumeRamp: config?.volumeRamp ?? false,
+              vibrate: config?.vibrate ?? true,
+              ringtoneUri: config?.ringtoneUri,
             ));
-          }
-        case 'SILENT':
-          // Occurrence row recorded; no OS scheduling needed
-          break;
+            final preMinutes = config?.preNotifyMinutes;
+            if (preMinutes != null && preMinutes > 0) {
+              final preTime = time.subtract(Duration(minutes: preMinutes));
+              if (preTime.isAfter(DateTime.now()) &&
+                  isQuietTime?.call(preTime) != true) {
+                await notificationScheduler.scheduleNotification(NotificationRequest(
+                  id: notifId + kNotifBucket,
+                  reminderId: reminder.id,
+                  title: reminder.title,
+                  body: '距離鬧鐘響起還有 $preMinutes 分鐘',
+                  triggerAt: preTime,
+                ));
+              }
+            }
+            osOk = true;
+          case 'NOTIFICATION':
+            if (isQuietTime?.call(time) != true) {
+              await notificationScheduler.scheduleNotification(NotificationRequest(
+                id: notifId,
+                reminderId: reminder.id,
+                title: reminder.title,
+                triggerAt: time,
+              ));
+            }
+            osOk = true;
+          case 'SILENT':
+            // Occurrence row recorded; no OS scheduling needed.
+            osOk = true;
+        }
+      } catch (_) {
+        await occurrenceDao.deleteById(occurrenceId);
+        continue;
+      }
+
+      if (osOk) {
+        await occurrenceDao.upsert(OccurrencesCompanion(
+          id: Value(occurrenceId),
+          osScheduled: const Value(true),
+        ));
       }
     }
   }

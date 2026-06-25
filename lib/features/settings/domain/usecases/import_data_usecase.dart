@@ -7,9 +7,15 @@ import 'package:count_to_three/shared/database/daos/reminder_dao.dart';
 import 'package:drift/drift.dart';
 
 class ImportResult {
-  const ImportResult({required this.imported, required this.skipped});
+  const ImportResult({
+    required this.imported,
+    required this.skipped,
+    required this.updatedIds,
+  });
   final int imported;
   final int skipped;
+  // IDs of reminders whose data was actually changed (not skipped due to LWW).
+  final List<String> updatedIds;
 }
 
 class ImportDataUseCase {
@@ -42,6 +48,7 @@ class ImportDataUseCase {
 
     int imported = 0;
     int skipped = 0;
+    final updatedIds = <String>[];
     final nowMs = DateTime.now().millisecondsSinceEpoch;
 
     for (final raw in rawList) {
@@ -81,6 +88,7 @@ class ImportDataUseCase {
           type: Value(entry['type'] as String? ?? 'alarm'),
           alertLevel: Value(entry['alertLevel'] as String? ?? 'NOTIFICATION'),
           startAt: Value((entry['startAt'] as num?)?.toInt() ?? nowMs),
+          timezone: Value(entry['timezone'] as String? ?? 'Asia/Taipei'),
           isEnabled: Value(entry['isEnabled'] as bool? ?? true),
           isDeleted: Value(entry['isDeleted'] as bool? ?? false),
           createdAt: Value((entry['createdAt'] as num?)?.toInt() ?? nowMs),
@@ -104,12 +112,13 @@ class ImportDataUseCase {
           ));
         }
 
+        updatedIds.add(id);
         imported++;
       } catch (_) {
         skipped++;
       }
     }
 
-    return ImportResult(imported: imported, skipped: skipped);
+    return ImportResult(imported: imported, skipped: skipped, updatedIds: updatedIds);
   }
 }

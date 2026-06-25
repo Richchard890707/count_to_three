@@ -103,10 +103,19 @@ class GetStatsUseCase {
       final key = '${day.year}-${day.month}-${day.day}';
       if (completedDays.contains(key)) {
         streak++;
+      } else if (i == 0) {
+        // Today: pending alarms may still fire — don't break.
+        continue;
       } else {
-        // If today has no completions yet (pending may still fire), keep going.
-        if (i == 0) continue;
-        break;
+        // Days with no completions: only break if there were scheduled alarms.
+        // Days where no alarms were scheduled count as rest days.
+        final dayEnd = day.add(const Duration(days: 1)).subtract(const Duration(milliseconds: 1));
+        final total = await dao.countInRange(
+          day.millisecondsSinceEpoch,
+          dayEnd.millisecondsSinceEpoch,
+        );
+        if (total > 0) break; // alarms existed but none completed → streak broken
+        // No alarms that day → rest day, streak continues
       }
     }
     return streak;
