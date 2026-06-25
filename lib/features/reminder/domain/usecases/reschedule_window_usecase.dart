@@ -95,7 +95,13 @@ class RescheduleWindowUseCase {
     for (final time in newTimes) {
       final scheduledMs = time.millisecondsSinceEpoch;
       final occurrenceId = '${reminder.id}_$scheduledMs';
-      final notifId = scheduledMs ~/ 1000 % 2000000000;
+      // Notification ID space is partitioned into three 700 M non-overlapping buckets
+      // (fits in Int32; collision-free for ~22 years per bucket):
+      //   [0, 700 M)       → main alarm / notification ID
+      //   [700 M, 1 400 M) → pre-notify ID  (+ 700_000_000)
+      //   [1 400 M, 2 100 M) → snooze ID  (+ 1_400_000_000)
+      const kNotifBucket = 700_000_000;
+      final notifId = scheduledMs ~/ 1000 % kNotifBucket;
 
       await occurrenceDao.upsert(OccurrencesCompanion(
         id: Value(occurrenceId),
@@ -127,7 +133,7 @@ class RescheduleWindowUseCase {
             if (preTime.isAfter(DateTime.now()) &&
                 isQuietTime?.call(preTime) != true) {
               await notificationScheduler.scheduleNotification(NotificationRequest(
-                id: notifId + 1000000,
+                id: notifId + kNotifBucket,
                 reminderId: reminder.id,
                 title: reminder.title,
                 body: '距離鬧鐘響起還有 $preMinutes 分鐘',

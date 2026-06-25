@@ -64,6 +64,8 @@ class AlarmService : Service() {
     private var currentAlarmId = -1
     private val handler = Handler(Looper.getMainLooper())
     private var volumeRampRunnable: Runnable? = null
+    private var autoStopRunnable: Runnable? = null
+    private var notifSwitchRunnable: Runnable? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -114,20 +116,24 @@ class AlarmService : Service() {
         // screen on), replace the high-priority trigger notification with a silent ongoing one
         // after 10 s.  When AlarmActivity does start, it replaces the notification itself
         // immediately (so there is no visible 10 s window of heads-up in the normal case).
-        handler.postDelayed({
+        val notifSwitch = Runnable {
             val nm = getSystemService(NOTIFICATION_SERVICE) as android.app.NotificationManager
             nm.notify(
                 NotificationHelper.NOTIFICATION_ID,
                 NotificationHelper.buildFiringNotification(this, alarm.title, alarmId),
             )
-        }, 10_000)
+        }
+        notifSwitchRunnable = notifSwitch
+        handler.postDelayed(notifSwitch, 10_000)
 
         playRingtone(alarm.volumeRamp, alarm.ringtoneUri)
         if (alarm.vibrate) startVibration()
         AlarmEventBus.emit(
             AlarmEvent.Fired(alarmId, alarm.reminderId, alarm.title, alarm.scheduledAt, alarm.snoozeCount, alarm.maxSnoozeCount)
         )
-        handler.postDelayed({ autoStop(alarmId) }, AUTO_STOP_MS)
+        val autoStop = Runnable { autoStop(alarmId) }
+        autoStopRunnable = autoStop
+        handler.postDelayed(autoStop, AUTO_STOP_MS)
     }
 
     private fun handleStop(alarmId: Int) {
@@ -236,7 +242,10 @@ class AlarmService : Service() {
     private fun teardown() {
         volumeRampRunnable?.let { handler.removeCallbacks(it) }
         volumeRampRunnable = null
-        handler.removeCallbacksAndMessages(null)
+        autoStopRunnable?.let { handler.removeCallbacks(it) }
+        autoStopRunnable = null
+        notifSwitchRunnable?.let { handler.removeCallbacks(it) }
+        notifSwitchRunnable = null
         mediaPlayer?.runCatching { stop(); release() }
         mediaPlayer = null
         vibrator?.cancel()

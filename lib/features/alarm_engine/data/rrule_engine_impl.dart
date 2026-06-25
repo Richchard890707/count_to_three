@@ -82,7 +82,7 @@ class RruleEngineImpl implements RuleEngine {
         RecurrenceFreq.weekly => Frequency.weekly,
         RecurrenceFreq.monthly => Frequency.monthly,
         RecurrenceFreq.yearly => Frequency.yearly,
-        RecurrenceFreq.none => Frequency.daily, // unreachable
+        RecurrenceFreq.none => throw StateError('_freq called with RecurrenceFreq.none'),
       };
 
   List<ByWeekDayEntry> _weekDays(List<String>? days) {

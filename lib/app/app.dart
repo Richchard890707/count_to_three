@@ -161,7 +161,8 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       if (reminder == null) return;
       final snoozeAt = DateTime.now().add(const Duration(minutes: 5));
       // Re-use notification id based on original scheduled time.
-      final notifId = (scheduledAtMs ~/ 1000 % 2000000000) + 2000000;
+      const kNotifBucket = 700_000_000;
+      final notifId = (scheduledAtMs ~/ 1000 % kNotifBucket) + kNotifBucket * 2;
       scheduler.scheduleNotification(NotificationRequest(
         id: notifId,
         reminderId: reminderId,
@@ -179,17 +180,18 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   }
 
   void _markOccurrenceCompleted(String reminderId, int scheduledAtMs) {
-    ref
-        .read(appDatabaseProvider)
-        .occurrenceDao
-        .updateState('${reminderId}_$scheduledAtMs', 'completed');
-    _messengerKey.currentState?.showSnackBar(
-      const SnackBar(
-        content: Text('已記錄完成'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-    _refreshBadge();
+    final db = ref.read(appDatabaseProvider);
+    db.occurrenceDao.findById('${reminderId}_$scheduledAtMs').then((occ) {
+      if (occ == null || occ.state == 'completed') return;
+      db.occurrenceDao.updateState('${reminderId}_$scheduledAtMs', 'completed');
+      _messengerKey.currentState?.showSnackBar(
+        const SnackBar(
+          content: Text('已記錄完成'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      _refreshBadge();
+    });
   }
 
   @override

@@ -3,6 +3,10 @@ import Foundation
 final class AlarmStore {
     static let shared = AlarmStore()
     private var cache: [Int: AlarmData] = [:]
+    private let queue = DispatchQueue(
+        label: "com.example.count_to_three.AlarmStore",
+        attributes: .concurrent
+    )
     private let fileURL: URL = {
         FileManager.default
             .urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -12,18 +16,26 @@ final class AlarmStore {
     private init() { loadFromDisk() }
 
     func put(_ alarm: AlarmData) {
-        cache[alarm.id] = alarm
-        saveToDisk()
+        queue.async(flags: .barrier) {
+            self.cache[alarm.id] = alarm
+            self.saveToDisk()
+        }
     }
 
-    func get(_ id: Int) -> AlarmData? { cache[id] }
+    func get(_ id: Int) -> AlarmData? {
+        queue.sync { cache[id] }
+    }
 
     func remove(_ id: Int) {
-        cache.removeValue(forKey: id)
-        saveToDisk()
+        queue.async(flags: .barrier) {
+            self.cache.removeValue(forKey: id)
+            self.saveToDisk()
+        }
     }
 
-    func getAll() -> [AlarmData] { Array(cache.values) }
+    func getAll() -> [AlarmData] {
+        queue.sync { Array(cache.values) }
+    }
 
     private func loadFromDisk() {
         guard

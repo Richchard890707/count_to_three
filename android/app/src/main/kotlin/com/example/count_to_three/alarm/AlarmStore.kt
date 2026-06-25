@@ -54,7 +54,11 @@ object AlarmStore {
         cache.values.forEach { arr.put(it.toJson()) }
         val tmp = File(context.filesDir, "$FILE_NAME.tmp")
         tmp.writeText(arr.toString())
-        tmp.renameTo(storeFile(context))
+        if (!tmp.renameTo(storeFile(context))) {
+            // Fallback: copy bytes then delete tmp (works across partitions)
+            storeFile(context).writeText(tmp.readText())
+            tmp.delete()
+        }
     }
 
     private fun storeFile(context: Context) = File(context.filesDir, FILE_NAME)

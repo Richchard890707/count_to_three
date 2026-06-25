@@ -312,10 +312,11 @@ class AlarmListController extends _$AlarmListController {
     // occurrence doesn't shadow the newly rescheduled time in the UI.
     final occs = await db.occurrenceDao.getFuturePendingByReminder(reminderId, now);
     for (final occ in occs) {
-      final alarmId = occ.scheduledAt ~/ 1000 % 2000000000;
+      const kNotifBucket = 700_000_000;
+      final alarmId = occ.scheduledAt ~/ 1000 % kNotifBucket;
       await ref.read(alarmSchedulerProvider).cancelAlarm(alarmId);
       await ref.read(notificationSchedulerProvider).cancelNotification(alarmId);
-      await ref.read(notificationSchedulerProvider).cancelNotification(alarmId + 1000000);
+      await ref.read(notificationSchedulerProvider).cancelNotification(alarmId + kNotifBucket);
     }
     await db.occurrenceDao.deleteAllPendingByReminder(reminderId);
 
@@ -386,10 +387,11 @@ class AlarmListController extends _$AlarmListController {
       final now = DateTime.now().millisecondsSinceEpoch;
       final occs = await db.occurrenceDao.getFuturePendingByReminder(reminderId, now);
       for (final occ in occs) {
-        final alarmId = occ.scheduledAt ~/ 1000 % 2000000000;
+        const kNotifBucket = 700_000_000;
+        final alarmId = occ.scheduledAt ~/ 1000 % kNotifBucket;
         await ref.read(alarmSchedulerProvider).cancelAlarm(alarmId);
         await ref.read(notificationSchedulerProvider).cancelNotification(alarmId);
-        await ref.read(notificationSchedulerProvider).cancelNotification(alarmId + 1000000);
+        await ref.read(notificationSchedulerProvider).cancelNotification(alarmId + kNotifBucket);
       }
       // Remove occurrence rows so re-enabling starts from a clean window
       await db.occurrenceDao.deleteFutureByReminder(reminderId);

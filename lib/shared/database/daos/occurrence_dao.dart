@@ -65,6 +65,9 @@ class OccurrenceDao extends DatabaseAccessor<AppDatabase>
           .get()
           .then((rows) => rows.isNotEmpty);
 
+  Future<void> deleteById(String id) =>
+      (delete(occurrences)..where((o) => o.id.equals(id))).go();
+
   Future<void> deleteAllByReminder(String reminderId) =>
       (delete(occurrences)..where((o) => o.reminderId.equals(reminderId))).go();
 

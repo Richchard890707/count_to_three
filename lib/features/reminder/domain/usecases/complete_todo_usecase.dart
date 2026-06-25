@@ -30,11 +30,12 @@ class CompleteTodoUseCase {
     );
 
     for (final occ in pending) {
-      final notifId = occ.scheduledAt ~/ 1000 % 2000000000;
+      const kNotifBucket = 700_000_000;
+      final notifId = occ.scheduledAt ~/ 1000 % kNotifBucket;
       switch (reminder.alertLevel) {
         case 'ALARM':
           await alarmScheduler.cancelAlarm(notifId);
-          await notificationScheduler.cancelNotification(notifId + 1000000);
+          await notificationScheduler.cancelNotification(notifId + kNotifBucket);
         case 'NOTIFICATION':
           await notificationScheduler.cancelNotification(notifId);
         case 'SILENT':

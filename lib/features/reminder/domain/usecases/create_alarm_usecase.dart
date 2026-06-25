@@ -17,7 +17,7 @@ class CreateAlarmUseCase {
     // Use epoch-seconds as a stable int ID; unique enough for single-alarm M2
     final reminderId = '${triggerAt.millisecondsSinceEpoch}-${now % 100000}';
     final occurrenceId = '$reminderId-occ';
-    final alarmId = triggerAt.millisecondsSinceEpoch ~/ 1000 % 2000000000;
+    final alarmId = triggerAt.millisecondsSinceEpoch ~/ 1000 % 700_000_000;
 
     await _reminderDao.upsert(RemindersCompanion.insert(
       id: reminderId,

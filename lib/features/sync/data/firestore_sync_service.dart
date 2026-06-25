@@ -149,7 +149,10 @@ class FirestoreSyncService implements SyncService {
 
     _occSubscription = _occCol(uid).snapshots().listen((snapshot) async {
       for (final change in snapshot.docChanges) {
-        if (change.type == DocumentChangeType.removed) continue;
+        if (change.type == DocumentChangeType.removed) {
+          await occurrenceDao.deleteById(change.doc.id);
+          continue;
+        }
         await _upsertOccurrenceLww(change.doc.id, change.doc.data()!);
       }
     });
