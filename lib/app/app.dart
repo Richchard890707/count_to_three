@@ -27,13 +27,14 @@ class App extends ConsumerStatefulWidget {
   ConsumerState<App> createState() => _AppState();
 }
 
-class _AppState extends ConsumerState<App> {
+class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   final _messengerKey = GlobalKey<ScaffoldMessengerState>();
   late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _router = router_module.buildRouter(widget.onboarded);
 
     // Keep home widget data fresh
@@ -160,7 +161,7 @@ class _AppState extends ConsumerState<App> {
       if (reminder == null) return;
       final snoozeAt = DateTime.now().add(const Duration(minutes: 5));
       // Re-use notification id based on original scheduled time.
-      final notifId = (scheduledAtMs ~/ 1000 % 1000000) + 2000000;
+      final notifId = (scheduledAtMs ~/ 1000 % 2000000000) + 2000000;
       scheduler.scheduleNotification(NotificationRequest(
         id: notifId,
         reminderId: reminderId,
@@ -189,6 +190,20 @@ class _AppState extends ConsumerState<App> {
       ),
     );
     _refreshBadge();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      final db = ref.read(appDatabaseProvider);
+      db.occurrenceDao.markMissedBefore(DateTime.now().millisecondsSinceEpoch);
+    }
   }
 
   static const _alarmChannel = MethodChannel('app.ontime/alarm');

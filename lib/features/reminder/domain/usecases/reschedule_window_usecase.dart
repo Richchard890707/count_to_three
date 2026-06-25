@@ -70,15 +70,19 @@ class RescheduleWindowUseCase {
     List<DateTime> newTimes;
 
     if (reminder.recurrenceRuleId == null) {
+      final alreadyExists = await occurrenceDao.hasAnyByReminder(reminder.id);
       newTimes =
-          (pending.isEmpty && dtStart.isAfter(now)) ? [dtStart] : const [];
+          (!alreadyExists && dtStart.isAfter(now)) ? [dtStart] : const [];
     } else {
       final rule = await recurrenceRuleDao.findById(reminder.recurrenceRuleId!);
       if (rule == null) return;
 
-      final expandFrom = pending.isEmpty
-          ? now
+      final lastPendingTime = pending.isEmpty
+          ? null
           : DateTime.fromMillisecondsSinceEpoch(pending.last.scheduledAt);
+      final expandFrom = lastPendingTime == null || now.isAfter(lastPendingTime)
+          ? now
+          : lastPendingTime;
 
       newTimes = ruleEngine.nextOccurrences(
         rule.rruleString,
@@ -91,7 +95,7 @@ class RescheduleWindowUseCase {
     for (final time in newTimes) {
       final scheduledMs = time.millisecondsSinceEpoch;
       final occurrenceId = '${reminder.id}_$scheduledMs';
-      final notifId = scheduledMs ~/ 1000 % 1000000;
+      final notifId = scheduledMs ~/ 1000 % 2000000000;
 
       await occurrenceDao.upsert(OccurrencesCompanion(
         id: Value(occurrenceId),

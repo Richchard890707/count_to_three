@@ -235,7 +235,24 @@ class AlarmListController extends _$AlarmListController {
                 ? '重複待辦（${freq.label}）'
                 : '待辦 ${_fmt(trigger)}',
           };
-    final reminderId = await CreateRecurringAlarmUseCase(
+    // Pre-generate reminderId so AlarmConfig can be written BEFORE
+    // CreateRecurringAlarmUseCase calls fillForReminder (which reads AlarmConfig).
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    final reminderId = '${trigger.millisecondsSinceEpoch}-${nowMs % 100000}';
+
+    if (alertLevel == AlertLevel.alarm) {
+      await db.alarmConfigDao.upsert(AlarmConfigsCompanion(
+        reminderId: Value(reminderId),
+        snoozeMinutes: Value(snoozeMinutes),
+        snoozeMaxCount: Value(maxSnoozeCount),
+        preNotifyMinutes: Value(preNotifyMinutes),
+        volumeRamp: Value(volumeRamp),
+        vibrate: Value(vibrate),
+        ringtoneUri: Value(ringtoneUri),
+      ));
+    }
+
+    await CreateRecurringAlarmUseCase(
       reminderDao: db.reminderDao,
       recurrenceRuleDao: db.recurrenceRuleDao,
       ruleEngine: ref.read(ruleEngineProvider),
@@ -246,6 +263,7 @@ class AlarmListController extends _$AlarmListController {
       color: color,
       triggerAt: trigger,
       userId: userId,
+      reminderId: reminderId,
       recurrence: RecurrenceInput(
         freq: freq,
         interval: interval,
@@ -258,17 +276,6 @@ class AlarmListController extends _$AlarmListController {
       alertLevel: alertLevel.value,
       type: type.value,
     );
-    if (alertLevel == AlertLevel.alarm) {
-      await db.alarmConfigDao.upsert(AlarmConfigsCompanion(
-        reminderId: Value(reminderId),
-        snoozeMinutes: Value(snoozeMinutes),
-        snoozeMaxCount: Value(maxSnoozeCount),
-        preNotifyMinutes: Value(preNotifyMinutes),
-        volumeRamp: Value(volumeRamp),
-        vibrate: Value(vibrate),
-        ringtoneUri: Value(ringtoneUri),
-      ));
-    }
     // Fire-and-forget outbox flush; failures keep syncStatus='pending' for retry.
     if (userId != null) ref.read(syncServiceProvider).pushPending();
     return reminderId;
@@ -305,7 +312,7 @@ class AlarmListController extends _$AlarmListController {
     // occurrence doesn't shadow the newly rescheduled time in the UI.
     final occs = await db.occurrenceDao.getFuturePendingByReminder(reminderId, now);
     for (final occ in occs) {
-      final alarmId = occ.scheduledAt ~/ 1000 % 1000000;
+      final alarmId = occ.scheduledAt ~/ 1000 % 2000000000;
       await ref.read(alarmSchedulerProvider).cancelAlarm(alarmId);
       await ref.read(notificationSchedulerProvider).cancelNotification(alarmId);
       await ref.read(notificationSchedulerProvider).cancelNotification(alarmId + 1000000);
@@ -379,7 +386,7 @@ class AlarmListController extends _$AlarmListController {
       final now = DateTime.now().millisecondsSinceEpoch;
       final occs = await db.occurrenceDao.getFuturePendingByReminder(reminderId, now);
       for (final occ in occs) {
-        final alarmId = occ.scheduledAt ~/ 1000 % 1000000;
+        final alarmId = occ.scheduledAt ~/ 1000 % 2000000000;
         await ref.read(alarmSchedulerProvider).cancelAlarm(alarmId);
         await ref.read(notificationSchedulerProvider).cancelNotification(alarmId);
         await ref.read(notificationSchedulerProvider).cancelNotification(alarmId + 1000000);

@@ -88,13 +88,18 @@ final class AlarmEngine {
 
     // MARK: - Foreground reconciliation (Decision C)
 
-    /// Called from SceneDelegate.sceneDidBecomeActive.
-    /// Compares AlarmStore vs AlarmKit's live list; alarms that vanished were
-    /// stopped/snoozed via the system UI — emit Dismissed events and clean up.
+    /// Called from applicationDidBecomeActive.
+    /// Compares AlarmStore vs AlarmKit's live list; past-due alarms that vanished
+    /// were stopped/snoozed via the system UI — emit Dismissed events and clean up.
     func detectHandledAlarms() async {
         guard #available(iOS 26.1, *) else { return }
-        let activeIds = await AlarmKitScheduler.shared.pendingAlarmIds()
-        for alarm in AlarmStore.shared.getAll() where !activeIds.contains(alarm.id) {
+        guard let activeIds = await AlarmKitScheduler.shared.pendingAlarmIds() else { return }
+        let nowMs = Int(Date().timeIntervalSince1970 * 1000)
+        for alarm in AlarmStore.shared.getAll() {
+            // Only reconcile alarms that should have already fired; future
+            // alarms won't be in the live list yet even when correctly scheduled.
+            guard alarm.scheduledAt <= nowMs else { continue }
+            guard !activeIds.contains(alarm.id) else { continue }
             AlarmEventBus.shared.emit([
                 "type": "dismissed",
                 "alarmId": alarm.id,

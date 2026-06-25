@@ -30,7 +30,7 @@ class CompleteTodoUseCase {
     );
 
     for (final occ in pending) {
-      final notifId = occ.scheduledAt ~/ 1000 % 1000000;
+      final notifId = occ.scheduledAt ~/ 1000 % 2000000000;
       switch (reminder.alertLevel) {
         case 'ALARM':
           await alarmScheduler.cancelAlarm(notifId);

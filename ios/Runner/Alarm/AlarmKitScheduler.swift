@@ -59,12 +59,13 @@ final class AlarmKitScheduler {
 
     // MARK: - Pending alarm detection (called on app foreground)
 
-    /// Returns the set of our alarmIds that are still actively scheduled in AlarmKit.
-    func pendingAlarmIds() async -> Set<Int> {
+    /// Returns the set of our alarmIds still actively scheduled in AlarmKit,
+    /// or nil if AlarmManager.shared.alarms throws (e.g. not authorized yet).
+    func pendingAlarmIds() async -> Set<Int>? {
         let stored = AlarmStore.shared.getAll()
         guard !stored.isEmpty else { return [] }
 
-        let kitAlarms = (try? AlarmManager.shared.alarms) ?? []   // throws in 26.5
+        guard let kitAlarms = try? AlarmManager.shared.alarms else { return nil }
         let activeUUIDs = Set(kitAlarms.map { $0.id })
         return Set(stored.filter { activeUUIDs.contains(alarmUUID($0.id)) }.map { $0.id })
     }
@@ -89,6 +90,6 @@ final class AlarmKitScheduler {
     func requestAuthorization() async -> Bool { false }
     func schedule(_ alarm: AlarmData) async throws {}
     func cancel(alarmId: Int) throws {}
-    func pendingAlarmIds() async -> Set<Int> { [] }
+    func pendingAlarmIds() async -> Set<Int>? { [] }
 }
 #endif

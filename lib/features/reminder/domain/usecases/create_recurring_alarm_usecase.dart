@@ -27,16 +27,17 @@ class CreateRecurringAlarmUseCase {
     RecurrenceInput recurrence = RecurrenceInput.none,
     String alertLevel = 'ALARM',
     String type = 'alarm',
+    String? reminderId,
   }) async {
     final nowMs = DateTime.now().millisecondsSinceEpoch;
-    final reminderId = '${triggerAt.millisecondsSinceEpoch}-${nowMs % 100000}';
+    final effectiveReminderId = reminderId ?? '${triggerAt.millisecondsSinceEpoch}-${nowMs % 100000}';
 
     // 1. Persist recurrence rule (if any) before the Reminder row so the FK
     //    exists when foreign_keys=ON is enforced.
     String? rruleId;
     if (recurrence.freq != RecurrenceFreq.none) {
       final compiled = ruleEngine.compile(recurrence)!;
-      rruleId = 'rrule_$reminderId';
+      rruleId = 'rrule_$effectiveReminderId';
       await recurrenceRuleDao.upsert(RecurrenceRulesCompanion(
         id: Value(rruleId),
         rruleString: Value(compiled.rruleString),
@@ -50,7 +51,7 @@ class CreateRecurringAlarmUseCase {
 
     // 2. Persist the Reminder
     await reminderDao.upsert(RemindersCompanion.insert(
-      id: reminderId,
+      id: effectiveReminderId,
       type: type,
       title: title,
       note: Value(note),
@@ -65,7 +66,7 @@ class CreateRecurringAlarmUseCase {
     ));
 
     // 3. Expand and schedule the first window of occurrences
-    await rescheduleWindow.fillForReminder(reminderId);
-    return reminderId;
+    await rescheduleWindow.fillForReminder(effectiveReminderId);
+    return effectiveReminderId;
   }
 }

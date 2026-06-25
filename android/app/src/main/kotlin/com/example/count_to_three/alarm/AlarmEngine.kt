@@ -52,7 +52,7 @@ object AlarmEngine {
         )
         AlarmStore.put(context, snoozed)
         AlarmScheduler.schedule(context, snoozed)
-        AlarmEventBus.emit(com.example.count_to_three.alarm.model.AlarmEvent.Snoozed(alarmId, alarm.reminderId, snoozed.scheduledAt, snoozed.snoozeCount))
+        AlarmEventBus.emit(com.example.count_to_three.alarm.model.AlarmEvent.Snoozed(alarmId, alarm.reminderId, alarm.scheduledAt, snoozed.snoozeCount))
     }
 
     fun getPendingAlarms(): List<Map<String, Any>> =

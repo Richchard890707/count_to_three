@@ -59,6 +59,12 @@ class OccurrenceDao extends DatabaseAccessor<AppDatabase>
             ..orderBy([(o) => OrderingTerm.asc(o.scheduledAt)]))
           .get();
 
+  Future<bool> hasAnyByReminder(String reminderId) =>
+      (select(occurrences)..where((o) => o.reminderId.equals(reminderId))
+            ..limit(1))
+          .get()
+          .then((rows) => rows.isNotEmpty);
+
   Future<void> deleteAllByReminder(String reminderId) =>
       (delete(occurrences)..where((o) => o.reminderId.equals(reminderId))).go();
 

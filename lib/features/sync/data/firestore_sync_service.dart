@@ -90,7 +90,11 @@ class FirestoreSyncService implements SyncService {
       batch.set(occCol.doc(occ.id), _occToMap(occ));
     }
 
-    await batch.commit();
+    try {
+      await batch.commit();
+    } catch (_) {
+      return; // network failure — leave records as 'pending' for next sync
+    }
 
     for (final r in pending) {
       await reminderDao.updateSyncStatus(r.id, 'synced');
