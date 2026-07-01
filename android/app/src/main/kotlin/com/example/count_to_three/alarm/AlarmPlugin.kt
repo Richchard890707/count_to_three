@@ -57,11 +57,21 @@ class AlarmPlugin(
                 result.success(null)
             }
             "cancelAlarm" -> {
-                AlarmEngine.cancelAlarm(context, (call.arguments as Number).toInt())
+                val alarmId = (call.arguments as Number).toInt()
+                // If the service is actively ringing this alarm, stop it properly
+                // (teardown + Dismissed event). Otherwise just cancel the scheduled intent.
+                if (!AlarmService.stopIfRinging(alarmId)) {
+                    AlarmEngine.cancelAlarm(context, alarmId)
+                }
                 result.success(null)
             }
             "snoozeAlarm" -> {
-                AlarmEngine.snoozeAlarm(context, (call.arguments as Number).toInt())
+                val alarmId = (call.arguments as Number).toInt()
+                // If the service is actively ringing, route through handleSnooze
+                // (teardown + reschedule + Snoozed event). Fallback keeps existing behaviour.
+                if (!AlarmService.snoozeIfRinging(alarmId)) {
+                    AlarmEngine.snoozeAlarm(context, alarmId)
+                }
                 result.success(null)
             }
             "getPendingAlarms" -> result.success(AlarmEngine.getPendingAlarms())

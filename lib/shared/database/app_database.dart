@@ -10,31 +10,49 @@ import 'tables/reminders_table.dart';
 import 'tables/recurrence_rules_table.dart';
 import 'tables/alarm_configs_table.dart';
 import 'tables/occurrences_table.dart';
+import 'tables/workout_tables.dart';
 import 'daos/alarm_config_dao.dart';
 import 'daos/reminder_dao.dart';
 import 'daos/occurrence_dao.dart';
 import 'daos/recurrence_rule_dao.dart';
+import 'daos/workout_dao.dart';
 
 export 'tables/users_table.dart';
 export 'tables/reminders_table.dart';
 export 'tables/recurrence_rules_table.dart';
 export 'tables/alarm_configs_table.dart';
 export 'tables/occurrences_table.dart';
+export 'tables/workout_tables.dart';
 export 'daos/alarm_config_dao.dart';
 export 'daos/recurrence_rule_dao.dart';
+export 'daos/workout_dao.dart';
 
 part 'app_database.g.dart';
 
 @DriftDatabase(
-  tables: [Users, Reminders, RecurrenceRules, AlarmConfigs, Occurrences],
-  daos: [ReminderDao, OccurrenceDao, RecurrenceRuleDao, AlarmConfigDao],
+  tables: [
+    Users,
+    Reminders,
+    RecurrenceRules,
+    AlarmConfigs,
+    Occurrences,
+    WorkoutSessions,
+    SetRecords,
+  ],
+  daos: [
+    ReminderDao,
+    OccurrenceDao,
+    RecurrenceRuleDao,
+    AlarmConfigDao,
+    WorkoutDao,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -58,6 +76,11 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 5) {
         await m.addColumn(reminders, reminders.color);
+      }
+      if (from < 6) {
+        // scenario_timer: additive only, existing tables untouched.
+        await m.createTable(workoutSessions);
+        await m.createTable(setRecords);
       }
     },
     beforeOpen: (details) async {

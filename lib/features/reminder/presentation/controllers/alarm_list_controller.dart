@@ -5,6 +5,7 @@ import 'package:count_to_three/core/providers/notification_scheduler_provider.da
 import 'package:count_to_three/core/providers/reschedule_window_provider.dart';
 import 'package:count_to_three/core/providers/rule_engine_provider.dart';
 import 'package:count_to_three/core/providers/sync_provider.dart';
+import 'package:count_to_three/core/providers/timezone_provider.dart';
 import 'package:count_to_three/features/alarm_engine/domain/models/alarm_engine_event.dart';
 import 'package:count_to_three/features/alarm_engine/domain/models/recurrence_input.dart';
 import 'package:count_to_three/features/reminder/domain/models/reminder_enums.dart';
@@ -239,6 +240,9 @@ class AlarmListController extends _$AlarmListController {
     // CreateRecurringAlarmUseCase calls fillForReminder (which reads AlarmConfig).
     final nowMs = DateTime.now().millisecondsSinceEpoch;
     final reminderId = '${trigger.millisecondsSinceEpoch}-${nowMs % 100000}';
+    final tz = await ref
+        .read(localTimezoneProvider.future)
+        .catchError((_) => 'Asia/Taipei');
 
     if (alertLevel == AlertLevel.alarm) {
       await db.alarmConfigDao.upsert(AlarmConfigsCompanion(
@@ -261,6 +265,7 @@ class AlarmListController extends _$AlarmListController {
       title: effectiveTitle,
       note: note,
       color: color,
+      timezone: tz,
       triggerAt: trigger,
       userId: userId,
       reminderId: reminderId,
@@ -306,6 +311,9 @@ class AlarmListController extends _$AlarmListController {
   }) async {
     final db = ref.read(appDatabaseProvider);
     final now = DateTime.now().millisecondsSinceEpoch;
+    final tz = await ref
+        .read(localTimezoneProvider.future)
+        .catchError((_) => 'Asia/Taipei');
 
     // Cancel OS-scheduled occurrences and purge all pending rows.
     // We delete ALL pending (past + future) so a stale fired-but-not-dismissed
@@ -317,6 +325,7 @@ class AlarmListController extends _$AlarmListController {
       await ref.read(alarmSchedulerProvider).cancelAlarm(alarmId);
       await ref.read(notificationSchedulerProvider).cancelNotification(alarmId);
       await ref.read(notificationSchedulerProvider).cancelNotification(alarmId + kNotifBucket);
+      await ref.read(notificationSchedulerProvider).cancelNotification(alarmId + kNotifBucket * 2);
     }
     await db.occurrenceDao.deleteAllPendingByReminder(reminderId);
 
@@ -355,6 +364,7 @@ class AlarmListController extends _$AlarmListController {
       title: Value(title),
       note: Value(note?.isNotEmpty == true ? note : null),
       startAt: Value(triggerAt.millisecondsSinceEpoch),
+      timezone: Value(tz),
       alertLevel: Value(alertLevel.value),
       type: Value(type.value),
       recurrenceRuleId: Value(ruleId),
@@ -396,6 +406,7 @@ class AlarmListController extends _$AlarmListController {
         await ref.read(alarmSchedulerProvider).cancelAlarm(alarmId);
         await ref.read(notificationSchedulerProvider).cancelNotification(alarmId);
         await ref.read(notificationSchedulerProvider).cancelNotification(alarmId + kNotifBucket);
+        await ref.read(notificationSchedulerProvider).cancelNotification(alarmId + kNotifBucket * 2);
       }
       // Remove occurrence rows so re-enabling starts from a clean window
       await db.occurrenceDao.deleteFutureByReminder(reminderId);

@@ -3110,6 +3110,1004 @@ class OccurrencesCompanion extends UpdateCompanion<Occurrence> {
   }
 }
 
+class $WorkoutSessionsTable extends WorkoutSessions
+    with TableInfo<$WorkoutSessionsTable, WorkoutSessionRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WorkoutSessionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<int> startedAt = GeneratedColumn<int>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endedAtMeta = const VerificationMeta(
+    'endedAt',
+  );
+  @override
+  late final GeneratedColumn<int> endedAt = GeneratedColumn<int>(
+    'ended_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _targetSetsMeta = const VerificationMeta(
+    'targetSets',
+  );
+  @override
+  late final GeneratedColumn<int> targetSets = GeneratedColumn<int>(
+    'target_sets',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _softTargetMsMeta = const VerificationMeta(
+    'softTargetMs',
+  );
+  @override
+  late final GeneratedColumn<int> softTargetMs = GeneratedColumn<int>(
+    'soft_target_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _profileMeta = const VerificationMeta(
+    'profile',
+  );
+  @override
+  late final GeneratedColumn<String> profile = GeneratedColumn<String>(
+    'profile',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('workout'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    startedAt,
+    endedAt,
+    targetSets,
+    softTargetMs,
+    profile,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'workout_sessions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WorkoutSessionRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('ended_at')) {
+      context.handle(
+        _endedAtMeta,
+        endedAt.isAcceptableOrUnknown(data['ended_at']!, _endedAtMeta),
+      );
+    }
+    if (data.containsKey('target_sets')) {
+      context.handle(
+        _targetSetsMeta,
+        targetSets.isAcceptableOrUnknown(data['target_sets']!, _targetSetsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_targetSetsMeta);
+    }
+    if (data.containsKey('soft_target_ms')) {
+      context.handle(
+        _softTargetMsMeta,
+        softTargetMs.isAcceptableOrUnknown(
+          data['soft_target_ms']!,
+          _softTargetMsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_softTargetMsMeta);
+    }
+    if (data.containsKey('profile')) {
+      context.handle(
+        _profileMeta,
+        profile.isAcceptableOrUnknown(data['profile']!, _profileMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  WorkoutSessionRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WorkoutSessionRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}started_at'],
+      )!,
+      endedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ended_at'],
+      ),
+      targetSets: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}target_sets'],
+      )!,
+      softTargetMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}soft_target_ms'],
+      )!,
+      profile: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}profile'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $WorkoutSessionsTable createAlias(String alias) {
+    return $WorkoutSessionsTable(attachedDatabase, alias);
+  }
+}
+
+class WorkoutSessionRow extends DataClass
+    implements Insertable<WorkoutSessionRow> {
+  final String id;
+  final int startedAt;
+  final int? endedAt;
+  final int targetSets;
+  final int softTargetMs;
+  final String profile;
+  final int createdAt;
+  const WorkoutSessionRow({
+    required this.id,
+    required this.startedAt,
+    this.endedAt,
+    required this.targetSets,
+    required this.softTargetMs,
+    required this.profile,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['started_at'] = Variable<int>(startedAt);
+    if (!nullToAbsent || endedAt != null) {
+      map['ended_at'] = Variable<int>(endedAt);
+    }
+    map['target_sets'] = Variable<int>(targetSets);
+    map['soft_target_ms'] = Variable<int>(softTargetMs);
+    map['profile'] = Variable<String>(profile);
+    map['created_at'] = Variable<int>(createdAt);
+    return map;
+  }
+
+  WorkoutSessionsCompanion toCompanion(bool nullToAbsent) {
+    return WorkoutSessionsCompanion(
+      id: Value(id),
+      startedAt: Value(startedAt),
+      endedAt: endedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endedAt),
+      targetSets: Value(targetSets),
+      softTargetMs: Value(softTargetMs),
+      profile: Value(profile),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory WorkoutSessionRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WorkoutSessionRow(
+      id: serializer.fromJson<String>(json['id']),
+      startedAt: serializer.fromJson<int>(json['startedAt']),
+      endedAt: serializer.fromJson<int?>(json['endedAt']),
+      targetSets: serializer.fromJson<int>(json['targetSets']),
+      softTargetMs: serializer.fromJson<int>(json['softTargetMs']),
+      profile: serializer.fromJson<String>(json['profile']),
+      createdAt: serializer.fromJson<int>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'startedAt': serializer.toJson<int>(startedAt),
+      'endedAt': serializer.toJson<int?>(endedAt),
+      'targetSets': serializer.toJson<int>(targetSets),
+      'softTargetMs': serializer.toJson<int>(softTargetMs),
+      'profile': serializer.toJson<String>(profile),
+      'createdAt': serializer.toJson<int>(createdAt),
+    };
+  }
+
+  WorkoutSessionRow copyWith({
+    String? id,
+    int? startedAt,
+    Value<int?> endedAt = const Value.absent(),
+    int? targetSets,
+    int? softTargetMs,
+    String? profile,
+    int? createdAt,
+  }) => WorkoutSessionRow(
+    id: id ?? this.id,
+    startedAt: startedAt ?? this.startedAt,
+    endedAt: endedAt.present ? endedAt.value : this.endedAt,
+    targetSets: targetSets ?? this.targetSets,
+    softTargetMs: softTargetMs ?? this.softTargetMs,
+    profile: profile ?? this.profile,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  WorkoutSessionRow copyWithCompanion(WorkoutSessionsCompanion data) {
+    return WorkoutSessionRow(
+      id: data.id.present ? data.id.value : this.id,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      endedAt: data.endedAt.present ? data.endedAt.value : this.endedAt,
+      targetSets: data.targetSets.present
+          ? data.targetSets.value
+          : this.targetSets,
+      softTargetMs: data.softTargetMs.present
+          ? data.softTargetMs.value
+          : this.softTargetMs,
+      profile: data.profile.present ? data.profile.value : this.profile,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkoutSessionRow(')
+          ..write('id: $id, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('targetSets: $targetSets, ')
+          ..write('softTargetMs: $softTargetMs, ')
+          ..write('profile: $profile, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    startedAt,
+    endedAt,
+    targetSets,
+    softTargetMs,
+    profile,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WorkoutSessionRow &&
+          other.id == this.id &&
+          other.startedAt == this.startedAt &&
+          other.endedAt == this.endedAt &&
+          other.targetSets == this.targetSets &&
+          other.softTargetMs == this.softTargetMs &&
+          other.profile == this.profile &&
+          other.createdAt == this.createdAt);
+}
+
+class WorkoutSessionsCompanion extends UpdateCompanion<WorkoutSessionRow> {
+  final Value<String> id;
+  final Value<int> startedAt;
+  final Value<int?> endedAt;
+  final Value<int> targetSets;
+  final Value<int> softTargetMs;
+  final Value<String> profile;
+  final Value<int> createdAt;
+  final Value<int> rowid;
+  const WorkoutSessionsCompanion({
+    this.id = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.endedAt = const Value.absent(),
+    this.targetSets = const Value.absent(),
+    this.softTargetMs = const Value.absent(),
+    this.profile = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WorkoutSessionsCompanion.insert({
+    required String id,
+    required int startedAt,
+    this.endedAt = const Value.absent(),
+    required int targetSets,
+    required int softTargetMs,
+    this.profile = const Value.absent(),
+    required int createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       startedAt = Value(startedAt),
+       targetSets = Value(targetSets),
+       softTargetMs = Value(softTargetMs),
+       createdAt = Value(createdAt);
+  static Insertable<WorkoutSessionRow> custom({
+    Expression<String>? id,
+    Expression<int>? startedAt,
+    Expression<int>? endedAt,
+    Expression<int>? targetSets,
+    Expression<int>? softTargetMs,
+    Expression<String>? profile,
+    Expression<int>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (startedAt != null) 'started_at': startedAt,
+      if (endedAt != null) 'ended_at': endedAt,
+      if (targetSets != null) 'target_sets': targetSets,
+      if (softTargetMs != null) 'soft_target_ms': softTargetMs,
+      if (profile != null) 'profile': profile,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WorkoutSessionsCompanion copyWith({
+    Value<String>? id,
+    Value<int>? startedAt,
+    Value<int?>? endedAt,
+    Value<int>? targetSets,
+    Value<int>? softTargetMs,
+    Value<String>? profile,
+    Value<int>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return WorkoutSessionsCompanion(
+      id: id ?? this.id,
+      startedAt: startedAt ?? this.startedAt,
+      endedAt: endedAt ?? this.endedAt,
+      targetSets: targetSets ?? this.targetSets,
+      softTargetMs: softTargetMs ?? this.softTargetMs,
+      profile: profile ?? this.profile,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<int>(startedAt.value);
+    }
+    if (endedAt.present) {
+      map['ended_at'] = Variable<int>(endedAt.value);
+    }
+    if (targetSets.present) {
+      map['target_sets'] = Variable<int>(targetSets.value);
+    }
+    if (softTargetMs.present) {
+      map['soft_target_ms'] = Variable<int>(softTargetMs.value);
+    }
+    if (profile.present) {
+      map['profile'] = Variable<String>(profile.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<int>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkoutSessionsCompanion(')
+          ..write('id: $id, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('targetSets: $targetSets, ')
+          ..write('softTargetMs: $softTargetMs, ')
+          ..write('profile: $profile, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SetRecordsTable extends SetRecords
+    with TableInfo<$SetRecordsTable, SetRecordRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SetRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sessionIdMeta = const VerificationMeta(
+    'sessionId',
+  );
+  @override
+  late final GeneratedColumn<String> sessionId = GeneratedColumn<String>(
+    'session_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _setIndexMeta = const VerificationMeta(
+    'setIndex',
+  );
+  @override
+  late final GeneratedColumn<int> setIndex = GeneratedColumn<int>(
+    'set_index',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _restStartMsMeta = const VerificationMeta(
+    'restStartMs',
+  );
+  @override
+  late final GeneratedColumn<int> restStartMs = GeneratedColumn<int>(
+    'rest_start_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _restEndMsMeta = const VerificationMeta(
+    'restEndMs',
+  );
+  @override
+  late final GeneratedColumn<int> restEndMs = GeneratedColumn<int>(
+    'rest_end_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _restDurationMsMeta = const VerificationMeta(
+    'restDurationMs',
+  );
+  @override
+  late final GeneratedColumn<int> restDurationMs = GeneratedColumn<int>(
+    'rest_duration_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cueConfigJsonMeta = const VerificationMeta(
+    'cueConfigJson',
+  );
+  @override
+  late final GeneratedColumn<String> cueConfigJson = GeneratedColumn<String>(
+    'cue_config_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    sessionId,
+    setIndex,
+    restStartMs,
+    restEndMs,
+    restDurationMs,
+    cueConfigJson,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'set_records';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SetRecordRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('session_id')) {
+      context.handle(
+        _sessionIdMeta,
+        sessionId.isAcceptableOrUnknown(data['session_id']!, _sessionIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sessionIdMeta);
+    }
+    if (data.containsKey('set_index')) {
+      context.handle(
+        _setIndexMeta,
+        setIndex.isAcceptableOrUnknown(data['set_index']!, _setIndexMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_setIndexMeta);
+    }
+    if (data.containsKey('rest_start_ms')) {
+      context.handle(
+        _restStartMsMeta,
+        restStartMs.isAcceptableOrUnknown(
+          data['rest_start_ms']!,
+          _restStartMsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_restStartMsMeta);
+    }
+    if (data.containsKey('rest_end_ms')) {
+      context.handle(
+        _restEndMsMeta,
+        restEndMs.isAcceptableOrUnknown(data['rest_end_ms']!, _restEndMsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_restEndMsMeta);
+    }
+    if (data.containsKey('rest_duration_ms')) {
+      context.handle(
+        _restDurationMsMeta,
+        restDurationMs.isAcceptableOrUnknown(
+          data['rest_duration_ms']!,
+          _restDurationMsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_restDurationMsMeta);
+    }
+    if (data.containsKey('cue_config_json')) {
+      context.handle(
+        _cueConfigJsonMeta,
+        cueConfigJson.isAcceptableOrUnknown(
+          data['cue_config_json']!,
+          _cueConfigJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_cueConfigJsonMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SetRecordRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SetRecordRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      sessionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}session_id'],
+      )!,
+      setIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}set_index'],
+      )!,
+      restStartMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}rest_start_ms'],
+      )!,
+      restEndMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}rest_end_ms'],
+      )!,
+      restDurationMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}rest_duration_ms'],
+      )!,
+      cueConfigJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cue_config_json'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SetRecordsTable createAlias(String alias) {
+    return $SetRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class SetRecordRow extends DataClass implements Insertable<SetRecordRow> {
+  final String id;
+  final String sessionId;
+  final int setIndex;
+  final int restStartMs;
+  final int restEndMs;
+  final int restDurationMs;
+  final String cueConfigJson;
+  final int createdAt;
+  const SetRecordRow({
+    required this.id,
+    required this.sessionId,
+    required this.setIndex,
+    required this.restStartMs,
+    required this.restEndMs,
+    required this.restDurationMs,
+    required this.cueConfigJson,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['session_id'] = Variable<String>(sessionId);
+    map['set_index'] = Variable<int>(setIndex);
+    map['rest_start_ms'] = Variable<int>(restStartMs);
+    map['rest_end_ms'] = Variable<int>(restEndMs);
+    map['rest_duration_ms'] = Variable<int>(restDurationMs);
+    map['cue_config_json'] = Variable<String>(cueConfigJson);
+    map['created_at'] = Variable<int>(createdAt);
+    return map;
+  }
+
+  SetRecordsCompanion toCompanion(bool nullToAbsent) {
+    return SetRecordsCompanion(
+      id: Value(id),
+      sessionId: Value(sessionId),
+      setIndex: Value(setIndex),
+      restStartMs: Value(restStartMs),
+      restEndMs: Value(restEndMs),
+      restDurationMs: Value(restDurationMs),
+      cueConfigJson: Value(cueConfigJson),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory SetRecordRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SetRecordRow(
+      id: serializer.fromJson<String>(json['id']),
+      sessionId: serializer.fromJson<String>(json['sessionId']),
+      setIndex: serializer.fromJson<int>(json['setIndex']),
+      restStartMs: serializer.fromJson<int>(json['restStartMs']),
+      restEndMs: serializer.fromJson<int>(json['restEndMs']),
+      restDurationMs: serializer.fromJson<int>(json['restDurationMs']),
+      cueConfigJson: serializer.fromJson<String>(json['cueConfigJson']),
+      createdAt: serializer.fromJson<int>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'sessionId': serializer.toJson<String>(sessionId),
+      'setIndex': serializer.toJson<int>(setIndex),
+      'restStartMs': serializer.toJson<int>(restStartMs),
+      'restEndMs': serializer.toJson<int>(restEndMs),
+      'restDurationMs': serializer.toJson<int>(restDurationMs),
+      'cueConfigJson': serializer.toJson<String>(cueConfigJson),
+      'createdAt': serializer.toJson<int>(createdAt),
+    };
+  }
+
+  SetRecordRow copyWith({
+    String? id,
+    String? sessionId,
+    int? setIndex,
+    int? restStartMs,
+    int? restEndMs,
+    int? restDurationMs,
+    String? cueConfigJson,
+    int? createdAt,
+  }) => SetRecordRow(
+    id: id ?? this.id,
+    sessionId: sessionId ?? this.sessionId,
+    setIndex: setIndex ?? this.setIndex,
+    restStartMs: restStartMs ?? this.restStartMs,
+    restEndMs: restEndMs ?? this.restEndMs,
+    restDurationMs: restDurationMs ?? this.restDurationMs,
+    cueConfigJson: cueConfigJson ?? this.cueConfigJson,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  SetRecordRow copyWithCompanion(SetRecordsCompanion data) {
+    return SetRecordRow(
+      id: data.id.present ? data.id.value : this.id,
+      sessionId: data.sessionId.present ? data.sessionId.value : this.sessionId,
+      setIndex: data.setIndex.present ? data.setIndex.value : this.setIndex,
+      restStartMs: data.restStartMs.present
+          ? data.restStartMs.value
+          : this.restStartMs,
+      restEndMs: data.restEndMs.present ? data.restEndMs.value : this.restEndMs,
+      restDurationMs: data.restDurationMs.present
+          ? data.restDurationMs.value
+          : this.restDurationMs,
+      cueConfigJson: data.cueConfigJson.present
+          ? data.cueConfigJson.value
+          : this.cueConfigJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SetRecordRow(')
+          ..write('id: $id, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('setIndex: $setIndex, ')
+          ..write('restStartMs: $restStartMs, ')
+          ..write('restEndMs: $restEndMs, ')
+          ..write('restDurationMs: $restDurationMs, ')
+          ..write('cueConfigJson: $cueConfigJson, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    sessionId,
+    setIndex,
+    restStartMs,
+    restEndMs,
+    restDurationMs,
+    cueConfigJson,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SetRecordRow &&
+          other.id == this.id &&
+          other.sessionId == this.sessionId &&
+          other.setIndex == this.setIndex &&
+          other.restStartMs == this.restStartMs &&
+          other.restEndMs == this.restEndMs &&
+          other.restDurationMs == this.restDurationMs &&
+          other.cueConfigJson == this.cueConfigJson &&
+          other.createdAt == this.createdAt);
+}
+
+class SetRecordsCompanion extends UpdateCompanion<SetRecordRow> {
+  final Value<String> id;
+  final Value<String> sessionId;
+  final Value<int> setIndex;
+  final Value<int> restStartMs;
+  final Value<int> restEndMs;
+  final Value<int> restDurationMs;
+  final Value<String> cueConfigJson;
+  final Value<int> createdAt;
+  final Value<int> rowid;
+  const SetRecordsCompanion({
+    this.id = const Value.absent(),
+    this.sessionId = const Value.absent(),
+    this.setIndex = const Value.absent(),
+    this.restStartMs = const Value.absent(),
+    this.restEndMs = const Value.absent(),
+    this.restDurationMs = const Value.absent(),
+    this.cueConfigJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SetRecordsCompanion.insert({
+    required String id,
+    required String sessionId,
+    required int setIndex,
+    required int restStartMs,
+    required int restEndMs,
+    required int restDurationMs,
+    required String cueConfigJson,
+    required int createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       sessionId = Value(sessionId),
+       setIndex = Value(setIndex),
+       restStartMs = Value(restStartMs),
+       restEndMs = Value(restEndMs),
+       restDurationMs = Value(restDurationMs),
+       cueConfigJson = Value(cueConfigJson),
+       createdAt = Value(createdAt);
+  static Insertable<SetRecordRow> custom({
+    Expression<String>? id,
+    Expression<String>? sessionId,
+    Expression<int>? setIndex,
+    Expression<int>? restStartMs,
+    Expression<int>? restEndMs,
+    Expression<int>? restDurationMs,
+    Expression<String>? cueConfigJson,
+    Expression<int>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (sessionId != null) 'session_id': sessionId,
+      if (setIndex != null) 'set_index': setIndex,
+      if (restStartMs != null) 'rest_start_ms': restStartMs,
+      if (restEndMs != null) 'rest_end_ms': restEndMs,
+      if (restDurationMs != null) 'rest_duration_ms': restDurationMs,
+      if (cueConfigJson != null) 'cue_config_json': cueConfigJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SetRecordsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? sessionId,
+    Value<int>? setIndex,
+    Value<int>? restStartMs,
+    Value<int>? restEndMs,
+    Value<int>? restDurationMs,
+    Value<String>? cueConfigJson,
+    Value<int>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return SetRecordsCompanion(
+      id: id ?? this.id,
+      sessionId: sessionId ?? this.sessionId,
+      setIndex: setIndex ?? this.setIndex,
+      restStartMs: restStartMs ?? this.restStartMs,
+      restEndMs: restEndMs ?? this.restEndMs,
+      restDurationMs: restDurationMs ?? this.restDurationMs,
+      cueConfigJson: cueConfigJson ?? this.cueConfigJson,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (sessionId.present) {
+      map['session_id'] = Variable<String>(sessionId.value);
+    }
+    if (setIndex.present) {
+      map['set_index'] = Variable<int>(setIndex.value);
+    }
+    if (restStartMs.present) {
+      map['rest_start_ms'] = Variable<int>(restStartMs.value);
+    }
+    if (restEndMs.present) {
+      map['rest_end_ms'] = Variable<int>(restEndMs.value);
+    }
+    if (restDurationMs.present) {
+      map['rest_duration_ms'] = Variable<int>(restDurationMs.value);
+    }
+    if (cueConfigJson.present) {
+      map['cue_config_json'] = Variable<String>(cueConfigJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<int>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SetRecordsCompanion(')
+          ..write('id: $id, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('setIndex: $setIndex, ')
+          ..write('restStartMs: $restStartMs, ')
+          ..write('restEndMs: $restEndMs, ')
+          ..write('restDurationMs: $restDurationMs, ')
+          ..write('cueConfigJson: $cueConfigJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3120,6 +4118,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $AlarmConfigsTable alarmConfigs = $AlarmConfigsTable(this);
   late final $OccurrencesTable occurrences = $OccurrencesTable(this);
+  late final $WorkoutSessionsTable workoutSessions = $WorkoutSessionsTable(
+    this,
+  );
+  late final $SetRecordsTable setRecords = $SetRecordsTable(this);
   late final ReminderDao reminderDao = ReminderDao(this as AppDatabase);
   late final OccurrenceDao occurrenceDao = OccurrenceDao(this as AppDatabase);
   late final RecurrenceRuleDao recurrenceRuleDao = RecurrenceRuleDao(
@@ -3128,6 +4130,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final AlarmConfigDao alarmConfigDao = AlarmConfigDao(
     this as AppDatabase,
   );
+  late final WorkoutDao workoutDao = WorkoutDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3138,6 +4141,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     recurrenceRules,
     alarmConfigs,
     occurrences,
+    workoutSessions,
+    setRecords,
   ];
 }
 
@@ -4651,6 +5656,517 @@ typedef $$OccurrencesTableProcessedTableManager =
       Occurrence,
       PrefetchHooks Function()
     >;
+typedef $$WorkoutSessionsTableCreateCompanionBuilder =
+    WorkoutSessionsCompanion Function({
+      required String id,
+      required int startedAt,
+      Value<int?> endedAt,
+      required int targetSets,
+      required int softTargetMs,
+      Value<String> profile,
+      required int createdAt,
+      Value<int> rowid,
+    });
+typedef $$WorkoutSessionsTableUpdateCompanionBuilder =
+    WorkoutSessionsCompanion Function({
+      Value<String> id,
+      Value<int> startedAt,
+      Value<int?> endedAt,
+      Value<int> targetSets,
+      Value<int> softTargetMs,
+      Value<String> profile,
+      Value<int> createdAt,
+      Value<int> rowid,
+    });
+
+class $$WorkoutSessionsTableFilterComposer
+    extends Composer<_$AppDatabase, $WorkoutSessionsTable> {
+  $$WorkoutSessionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get targetSets => $composableBuilder(
+    column: $table.targetSets,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get softTargetMs => $composableBuilder(
+    column: $table.softTargetMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get profile => $composableBuilder(
+    column: $table.profile,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$WorkoutSessionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $WorkoutSessionsTable> {
+  $$WorkoutSessionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get targetSets => $composableBuilder(
+    column: $table.targetSets,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get softTargetMs => $composableBuilder(
+    column: $table.softTargetMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get profile => $composableBuilder(
+    column: $table.profile,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$WorkoutSessionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WorkoutSessionsTable> {
+  $$WorkoutSessionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get endedAt =>
+      $composableBuilder(column: $table.endedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get targetSets => $composableBuilder(
+    column: $table.targetSets,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get softTargetMs => $composableBuilder(
+    column: $table.softTargetMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get profile =>
+      $composableBuilder(column: $table.profile, builder: (column) => column);
+
+  GeneratedColumn<int> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$WorkoutSessionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WorkoutSessionsTable,
+          WorkoutSessionRow,
+          $$WorkoutSessionsTableFilterComposer,
+          $$WorkoutSessionsTableOrderingComposer,
+          $$WorkoutSessionsTableAnnotationComposer,
+          $$WorkoutSessionsTableCreateCompanionBuilder,
+          $$WorkoutSessionsTableUpdateCompanionBuilder,
+          (
+            WorkoutSessionRow,
+            BaseReferences<
+              _$AppDatabase,
+              $WorkoutSessionsTable,
+              WorkoutSessionRow
+            >,
+          ),
+          WorkoutSessionRow,
+          PrefetchHooks Function()
+        > {
+  $$WorkoutSessionsTableTableManager(
+    _$AppDatabase db,
+    $WorkoutSessionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WorkoutSessionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WorkoutSessionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WorkoutSessionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<int> startedAt = const Value.absent(),
+                Value<int?> endedAt = const Value.absent(),
+                Value<int> targetSets = const Value.absent(),
+                Value<int> softTargetMs = const Value.absent(),
+                Value<String> profile = const Value.absent(),
+                Value<int> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkoutSessionsCompanion(
+                id: id,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                targetSets: targetSets,
+                softTargetMs: softTargetMs,
+                profile: profile,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required int startedAt,
+                Value<int?> endedAt = const Value.absent(),
+                required int targetSets,
+                required int softTargetMs,
+                Value<String> profile = const Value.absent(),
+                required int createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => WorkoutSessionsCompanion.insert(
+                id: id,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                targetSets: targetSets,
+                softTargetMs: softTargetMs,
+                profile: profile,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$WorkoutSessionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WorkoutSessionsTable,
+      WorkoutSessionRow,
+      $$WorkoutSessionsTableFilterComposer,
+      $$WorkoutSessionsTableOrderingComposer,
+      $$WorkoutSessionsTableAnnotationComposer,
+      $$WorkoutSessionsTableCreateCompanionBuilder,
+      $$WorkoutSessionsTableUpdateCompanionBuilder,
+      (
+        WorkoutSessionRow,
+        BaseReferences<_$AppDatabase, $WorkoutSessionsTable, WorkoutSessionRow>,
+      ),
+      WorkoutSessionRow,
+      PrefetchHooks Function()
+    >;
+typedef $$SetRecordsTableCreateCompanionBuilder =
+    SetRecordsCompanion Function({
+      required String id,
+      required String sessionId,
+      required int setIndex,
+      required int restStartMs,
+      required int restEndMs,
+      required int restDurationMs,
+      required String cueConfigJson,
+      required int createdAt,
+      Value<int> rowid,
+    });
+typedef $$SetRecordsTableUpdateCompanionBuilder =
+    SetRecordsCompanion Function({
+      Value<String> id,
+      Value<String> sessionId,
+      Value<int> setIndex,
+      Value<int> restStartMs,
+      Value<int> restEndMs,
+      Value<int> restDurationMs,
+      Value<String> cueConfigJson,
+      Value<int> createdAt,
+      Value<int> rowid,
+    });
+
+class $$SetRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $SetRecordsTable> {
+  $$SetRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sessionId => $composableBuilder(
+    column: $table.sessionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get setIndex => $composableBuilder(
+    column: $table.setIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get restStartMs => $composableBuilder(
+    column: $table.restStartMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get restEndMs => $composableBuilder(
+    column: $table.restEndMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get restDurationMs => $composableBuilder(
+    column: $table.restDurationMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cueConfigJson => $composableBuilder(
+    column: $table.cueConfigJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SetRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SetRecordsTable> {
+  $$SetRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sessionId => $composableBuilder(
+    column: $table.sessionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get setIndex => $composableBuilder(
+    column: $table.setIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get restStartMs => $composableBuilder(
+    column: $table.restStartMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get restEndMs => $composableBuilder(
+    column: $table.restEndMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get restDurationMs => $composableBuilder(
+    column: $table.restDurationMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cueConfigJson => $composableBuilder(
+    column: $table.cueConfigJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SetRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SetRecordsTable> {
+  $$SetRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get sessionId =>
+      $composableBuilder(column: $table.sessionId, builder: (column) => column);
+
+  GeneratedColumn<int> get setIndex =>
+      $composableBuilder(column: $table.setIndex, builder: (column) => column);
+
+  GeneratedColumn<int> get restStartMs => $composableBuilder(
+    column: $table.restStartMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get restEndMs =>
+      $composableBuilder(column: $table.restEndMs, builder: (column) => column);
+
+  GeneratedColumn<int> get restDurationMs => $composableBuilder(
+    column: $table.restDurationMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get cueConfigJson => $composableBuilder(
+    column: $table.cueConfigJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$SetRecordsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SetRecordsTable,
+          SetRecordRow,
+          $$SetRecordsTableFilterComposer,
+          $$SetRecordsTableOrderingComposer,
+          $$SetRecordsTableAnnotationComposer,
+          $$SetRecordsTableCreateCompanionBuilder,
+          $$SetRecordsTableUpdateCompanionBuilder,
+          (
+            SetRecordRow,
+            BaseReferences<_$AppDatabase, $SetRecordsTable, SetRecordRow>,
+          ),
+          SetRecordRow,
+          PrefetchHooks Function()
+        > {
+  $$SetRecordsTableTableManager(_$AppDatabase db, $SetRecordsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SetRecordsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SetRecordsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SetRecordsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> sessionId = const Value.absent(),
+                Value<int> setIndex = const Value.absent(),
+                Value<int> restStartMs = const Value.absent(),
+                Value<int> restEndMs = const Value.absent(),
+                Value<int> restDurationMs = const Value.absent(),
+                Value<String> cueConfigJson = const Value.absent(),
+                Value<int> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SetRecordsCompanion(
+                id: id,
+                sessionId: sessionId,
+                setIndex: setIndex,
+                restStartMs: restStartMs,
+                restEndMs: restEndMs,
+                restDurationMs: restDurationMs,
+                cueConfigJson: cueConfigJson,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String sessionId,
+                required int setIndex,
+                required int restStartMs,
+                required int restEndMs,
+                required int restDurationMs,
+                required String cueConfigJson,
+                required int createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => SetRecordsCompanion.insert(
+                id: id,
+                sessionId: sessionId,
+                setIndex: setIndex,
+                restStartMs: restStartMs,
+                restEndMs: restEndMs,
+                restDurationMs: restDurationMs,
+                cueConfigJson: cueConfigJson,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SetRecordsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SetRecordsTable,
+      SetRecordRow,
+      $$SetRecordsTableFilterComposer,
+      $$SetRecordsTableOrderingComposer,
+      $$SetRecordsTableAnnotationComposer,
+      $$SetRecordsTableCreateCompanionBuilder,
+      $$SetRecordsTableUpdateCompanionBuilder,
+      (
+        SetRecordRow,
+        BaseReferences<_$AppDatabase, $SetRecordsTable, SetRecordRow>,
+      ),
+      SetRecordRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4665,4 +6181,8 @@ class $AppDatabaseManager {
       $$AlarmConfigsTableTableManager(_db, _db.alarmConfigs);
   $$OccurrencesTableTableManager get occurrences =>
       $$OccurrencesTableTableManager(_db, _db.occurrences);
+  $$WorkoutSessionsTableTableManager get workoutSessions =>
+      $$WorkoutSessionsTableTableManager(_db, _db.workoutSessions);
+  $$SetRecordsTableTableManager get setRecords =>
+      $$SetRecordsTableTableManager(_db, _db.setRecords);
 }

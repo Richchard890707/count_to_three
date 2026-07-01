@@ -66,7 +66,6 @@ class FirestoreSyncService implements SyncService {
     final pendingOccs = await occurrenceDao.getPendingSync();
     if (pending.isEmpty && pendingOccs.isEmpty) return;
 
-    // Collect rule IDs referenced by pending reminders
     final ruleIds = pending
         .map((r) => r.recurrenceRuleId)
         .whereType<String>()
@@ -75,25 +74,36 @@ class FirestoreSyncService implements SyncService {
     final col = _col(uid);
     final rulesCol = _rulesCol(uid);
     final occCol = _occCol(uid);
-    final batch = _firestore.batch();
+
+    // Collect all writes as (docRef, data) pairs before batching.
+    final writes = <(DocumentReference<Map<String, dynamic>>, Map<String, dynamic>)>[];
 
     for (final r in pending) {
-      batch.set(col.doc(r.id), _toMap(r));
+      writes.add((col.doc(r.id), _toMap(r)));
     }
     for (final ruleId in ruleIds) {
       final rule = await recurrenceRuleDao.findById(ruleId);
       if (rule != null) {
-        batch.set(rulesCol.doc(rule.id), _ruleToMap(rule));
+        writes.add((rulesCol.doc(rule.id), _ruleToMap(rule)));
       }
     }
     for (final occ in pendingOccs) {
-      batch.set(occCol.doc(occ.id), _occToMap(occ));
+      writes.add((occCol.doc(occ.id), _occToMap(occ)));
     }
 
-    try {
-      await batch.commit();
-    } catch (_) {
-      return; // network failure — leave records as 'pending' for next sync
+    // Firestore hard-limits batches to 500 ops. Chunk at 400 for safety.
+    const chunkSize = 400;
+    for (var i = 0; i < writes.length; i += chunkSize) {
+      final end = (i + chunkSize).clamp(0, writes.length);
+      final batch = _firestore.batch();
+      for (final (ref, data) in writes.sublist(i, end)) {
+        batch.set(ref, data);
+      }
+      try {
+        await batch.commit();
+      } catch (_) {
+        return; // network failure — leave records as 'pending' for next sync
+      }
     }
 
     for (final r in pending) {

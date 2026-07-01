@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:count_to_three/app/theme/app_colors.dart';
 import 'package:count_to_three/core/providers/alarm_scheduler_provider.dart';
 import 'package:count_to_three/core/providers/database_provider.dart';
+import 'package:count_to_three/core/providers/reschedule_window_provider.dart';
+import 'package:count_to_three/core/providers/sync_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -15,6 +17,7 @@ class AlarmRingScreen extends ConsumerStatefulWidget {
     required this.title,
     this.snoozeCount = 0,
     this.maxSnoozeCount = 3,
+    this.scheduledAtMs,
   });
 
   final int alarmId;
@@ -22,6 +25,7 @@ class AlarmRingScreen extends ConsumerStatefulWidget {
   final String title;
   final int snoozeCount;
   final int maxSnoozeCount;
+  final int? scheduledAtMs;
 
   @override
   ConsumerState<AlarmRingScreen> createState() => _AlarmRingScreenState();
@@ -65,6 +69,23 @@ class _AlarmRingScreenState extends ConsumerState<AlarmRingScreen>
 
   Future<void> _stop() async {
     await ref.read(alarmSchedulerProvider).cancelAlarm(widget.alarmId);
+    final sAtMs = widget.scheduledAtMs;
+    if (sAtMs != null) {
+      // Mark the occurrence completed directly — covers iOS where cancelAlarm
+      // does not emit a Dismissed event, and Android edge cases where the ring
+      // screen handles stop before AlarmService.handleStop runs.
+      // The findById guard prevents double-completion when both paths fire.
+      final db = ref.read(appDatabaseProvider);
+      final sync = ref.read(syncServiceProvider);
+      final occId = '${widget.reminderId}_$sAtMs';
+      db.occurrenceDao.findById(occId).then((occ) {
+        if (occ == null || occ.state == 'completed') return;
+        db.occurrenceDao
+            .updateState(occId, 'completed')
+            .then((_) => sync.pushPending());
+      });
+      ref.read(rescheduleWindowProvider).fillForReminder(widget.reminderId);
+    }
     if (mounted) context.go('/alarms');
   }
 

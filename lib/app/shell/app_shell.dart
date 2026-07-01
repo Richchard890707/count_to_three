@@ -47,6 +47,11 @@ class AppShell extends ConsumerWidget {
         title: Text(_destinations[selectedIndex].label),
         actions: [
           IconButton(
+            icon: const Icon(Icons.fitness_center),
+            tooltip: '組間計時器',
+            onPressed: () => context.push('/timer'),
+          ),
+          IconButton(
             icon: const Icon(Icons.settings_outlined),
             tooltip: '設定',
             onPressed: () => context.push('/settings'),

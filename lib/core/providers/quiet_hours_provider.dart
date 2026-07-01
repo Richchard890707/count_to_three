@@ -39,6 +39,17 @@ class QuietHoursState {
         startMinutes: startMinutes ?? this.startMinutes,
         endMinutes: endMinutes ?? this.endMinutes,
       );
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is QuietHoursState &&
+          enabled == other.enabled &&
+          startMinutes == other.startMinutes &&
+          endMinutes == other.endMinutes;
+
+  @override
+  int get hashCode => Object.hash(enabled, startMinutes, endMinutes);
 }
 
 @Riverpod(keepAlive: true)

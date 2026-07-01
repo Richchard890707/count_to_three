@@ -7,6 +7,7 @@ import 'package:count_to_three/features/stats/presentation/screens/stats_screen.
 import 'package:count_to_three/features/auth/presentation/screens/settings_screen.dart';
 import 'package:count_to_three/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:count_to_three/features/alarm_engine/presentation/screens/alarm_ring_screen.dart';
+import 'package:count_to_three/features/scenario_timer/presentation/screens/scenario_picker_screen.dart';
 import 'package:count_to_three/shared/database/app_database.dart';
 
 GoRouter buildRouter(bool onboarded) => GoRouter(
@@ -15,6 +16,10 @@ GoRouter buildRouter(bool onboarded) => GoRouter(
     GoRoute(
       path: '/onboarding',
       builder: (context, state) => const OnboardingScreen(),
+    ),
+    GoRoute(
+      path: '/timer',
+      builder: (context, state) => const ScenarioPickerScreen(),
     ),
     ShellRoute(
       builder: (context, state, child) => AppShell(child: child),
@@ -65,6 +70,7 @@ GoRouter buildRouter(bool onboarded) => GoRouter(
           title: extra?['title'] as String? ?? '鬧鐘',
           snoozeCount: extra?['snoozeCount'] as int? ?? 0,
           maxSnoozeCount: extra?['maxSnoozeCount'] as int? ?? 3,
+          scheduledAtMs: extra?['scheduledAtMs'] as int?,
         );
       },
     ),

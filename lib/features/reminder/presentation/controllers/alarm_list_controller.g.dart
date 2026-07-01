@@ -111,7 +111,7 @@ final selectedFreqProvider =
 
 typedef _$SelectedFreq = AutoDisposeNotifier<RecurrenceFreq>;
 String _$alarmListControllerHash() =>
-    r'5eb605da2a2c07afeeea829d1fd5582c02325cb2';
+    r'28c305659c30646ee5f5f2f0781922f7f74249f5';
 
 /// See also [AlarmListController].
 @ProviderFor(AlarmListController)

@@ -65,5 +65,36 @@ class MainActivity : FlutterFragmentActivity() {
                     else -> result.notImplemented()
                 }
             }
+
+        // scenario_timer: show the timer over the lock screen and keep the
+        // screen on, so 做完這組/我好了 are tappable without unlocking.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "app.ontime/timer")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "setLockScreenMode" -> {
+                        val enabled = call.arguments as? Boolean ?: false
+                        runOnUiThread { setLockScreenMode(enabled) }
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+    }
+
+    private fun setLockScreenMode(enabled: Boolean) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(enabled)
+            setTurnScreenOn(enabled)
+        } else {
+            @Suppress("DEPRECATION")
+            val flags = WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+            if (enabled) window.addFlags(flags) else window.clearFlags(flags)
+        }
+        if (enabled) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
     }
 }

@@ -96,6 +96,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
             'title': event.title ?? '鬧鐘',
             'snoozeCount': event.snoozeCount ?? 0,
             'maxSnoozeCount': event.maxSnoozeCount ?? 3,
+            'scheduledAtMs': event.scheduledAtMs,
           });
         }
         // iOS NOTIFICATION-level tap: mark completed and show feedback.
@@ -104,7 +105,6 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
           if (scheduledAtMs != null) {
             _markOccurrenceCompleted(event.reminderId, scheduledAtMs);
           }
-          return; // no window refill for simple notifications
         }
         // Refill scheduling window after any alarm event.
         ref.read(rescheduleWindowProvider).fillForReminder(event.reminderId);

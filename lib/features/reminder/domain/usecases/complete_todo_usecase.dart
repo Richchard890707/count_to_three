@@ -36,8 +36,10 @@ class CompleteTodoUseCase {
         case 'ALARM':
           await alarmScheduler.cancelAlarm(notifId);
           await notificationScheduler.cancelNotification(notifId + kNotifBucket);
+          await notificationScheduler.cancelNotification(notifId + kNotifBucket * 2);
         case 'NOTIFICATION':
           await notificationScheduler.cancelNotification(notifId);
+          await notificationScheduler.cancelNotification(notifId + kNotifBucket * 2);
         case 'SILENT':
           break; // nothing scheduled, nothing to cancel
       }

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:count_to_three/core/providers/database_provider.dart';
 import 'package:count_to_three/core/providers/reschedule_window_provider.dart';
+import 'package:count_to_three/core/providers/sync_provider.dart';
 import 'package:count_to_three/features/stats/domain/models/stats_data.dart';
 import 'package:count_to_three/features/stats/presentation/controllers/stats_controller.dart';
 import 'package:count_to_three/shared/database/app_database.dart';
@@ -473,6 +474,7 @@ class _TodayListSection extends ConsumerWidget {
   ) async {
     await ref.read(appDatabaseProvider).occurrenceDao
         .updateState(occ.id, 'completed');
+    await ref.read(syncServiceProvider).pushPending();
     await ref.read(rescheduleWindowProvider).fillForReminder(occ.reminderId);
     if (Platform.isIOS) {
       try {

@@ -56,6 +56,25 @@ class AlarmService : Service() {
                 )
             }
         }
+
+        // Called from Flutter ring screen stop button.
+        // Routes to handleStop only when this service is actively ringing alarmId.
+        // Returns false (no-op) for pre-scheduled alarm cancellations.
+        fun stopIfRinging(alarmId: Int): Boolean {
+            val svc = instance ?: return false
+            if (svc.currentAlarmId != alarmId) return false
+            svc.handler.post { svc.handleStop(alarmId) }
+            return true
+        }
+
+        // Called from Flutter ring screen snooze button.
+        // Routes to handleSnooze only when this service is actively ringing alarmId.
+        fun snoozeIfRinging(alarmId: Int): Boolean {
+            val svc = instance ?: return false
+            if (svc.currentAlarmId != alarmId) return false
+            svc.handler.post { svc.handleSnooze(alarmId) }
+            return true
+        }
     }
 
     private var mediaPlayer: MediaPlayer? = null
